@@ -76,3 +76,6 @@ build.log
 
 # Local configs
 Local.xcconfig
+
+# Build caches
+.cache/
