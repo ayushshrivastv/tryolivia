@@ -2,8 +2,9 @@
 // CommandProcessor.swift
 // olivia
 //
-// Handles command parsing and execution for OLIVIA
-// This is free and unencumbered software released into the public domain.
+//
+// This file is part of OLIVIA Emergency Communication Network
+// Licensed under the MIT License - see LICENSE file for details
 //
 
 import Foundation
