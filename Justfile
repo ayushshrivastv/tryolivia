@@ -1,22 +1,26 @@
 # OLIVIA macOS Build Justfile
-# Handles temporary modifications needed to build and run on macOS
+# Decentralized Communication Network - Build System
 
 # Default recipe - shows available commands
 default:
-    @echo "OLIVIA macOS Build Commands:"
+    @echo "OLIVIA DAO Communication Network Build Commands:"
     @echo "  just run     - Build and run the macOS app"
     @echo "  just build   - Build the macOS app only"
     @echo "  just clean   - Clean build artifacts and restore original files"
     @echo "  just check   - Check prerequisites"
+    @echo "  just deploy-solana - Deploy Solana contracts (see Solana/deploy-mainnet.sh)"
     @echo ""
-    @echo "Original files are preserved - modifications are temporary for builds only"
+    @echo "Decentralized DAO messaging with blockchain governance"
 
 # Check prerequisites
 check:
     @echo "Checking prerequisites..."
-    @command -v xcodebuild >/dev/null 2>&1 || (echo "❌ Xcode not found. Install Xcode from App Store" && exit 1)
-    @security find-identity -v -p codesigning | grep -q "Developer ID" || (echo "⚠️  No Developer ID found - code signing may fail" && exit 0)
-    @echo "✅ All prerequisites met"
+    @command -v xcodebuild >/dev/null 2>&1 || (echo "❌ xcodebuild not found. Install Xcode from App Store" && exit 1)
+    @xcode-select -p | grep -q "Xcode.app" || (echo "❌ Full Xcode required, not just command line tools. Install from App Store and run:\n   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer" && exit 1)
+    @test -d "/Applications/Xcode.app" || (echo "❌ Xcode.app not found in Applications folder. Install from App Store" && exit 1)
+    @xcodebuild -version >/dev/null 2>&1 || (echo "❌ Xcode not properly configured. Try:\n   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer" && exit 1)
+    @security find-identity -v -p codesigning | grep -q "Apple Development\|Developer ID" || (echo "⚠️  No Developer ID found - code signing may fail" && exit 0)
+    @echo "All prerequisites met"
 
 # Backup original files
 backup:
@@ -62,7 +66,7 @@ clean: restore
         git checkout -- olivia.xcodeproj/project.pbxproj 2>/dev/null || echo "⚠️  Could not restore project.pbxproj"; \
     fi
     @rm -f project-macos.yml 2>/dev/null || true
-    @echo "✅ Cleaned and restored original files"
+    @echo "Cleaned and restored original files"
 
 # Quick run without cleaning (for development)
 dev-run: check
@@ -72,28 +76,29 @@ dev-run: check
 
 # Show app info
 info:
-    @echo "OLIVIA - Decentralized Mesh Messaging"
+    @echo "OLIVIA - Decentralized DAO Communication Network"
     @echo "======================================"
     @echo "• Native macOS SwiftUI app"
-    @echo "• Bluetooth LE mesh networking"
-    @echo "• End-to-end encryption"
-    @echo "• No internet required"
-    @echo "• Works offline with nearby devices"
+    @echo "• Solana blockchain governance"
+    @echo "• Magic Block gasless transactions"
+    @echo "• Noise Protocol encryption"
+    @echo "• Nostr protocol compatibility"
+    @echo "• Decentralized relay network"
     @echo ""
     @echo "Requirements:"
-    @echo "• macOS 13.0+ (Ventura)"
-    @echo "• Bluetooth LE capable Mac"
-    @echo "• Physical device (no simulator support)"
+    @echo "• macOS 12.0+ (Monterey)"
+    @echo "• Solana wallet (Phantom/Solflare)"
+    @echo "• Internet connection for blockchain"
     @echo ""
     @echo "Usage:"
-    @echo "• Set nickname and start chatting"
-    @echo "• Use /join #channel for group chats"
-    @echo "• Use /msg @user for private messages"
-    @echo "• Triple-tap logo for emergency wipe"
+    @echo "• Connect wallet and join DAO"
+    @echo "• Send gasless messages via Magic Block"
+    @echo "• Participate in governance voting"
+    @echo "• Earn rewards by running relay nodes"
 
 # Force clean everything (nuclear option)
 nuke:
-    @echo "🧨 Nuclear clean - removing all build artifacts and backups..."
+    @echo "Nuclear clean - removing all build artifacts and backups..."
     @rm -rf ~/Library/Developer/Xcode/DerivedData/olivia-* 2>/dev/null || true
     @rm -rf olivia.xcodeproj 2>/dev/null || true
     @rm -f olivia.xcodeproj/project.pbxproj.backup 2>/dev/null || true
@@ -101,4 +106,10 @@ nuke:
     @# Restore iOS-specific files if they were moved
     @if [ -f olivia/LaunchScreen.storyboard.ios ]; then mv olivia/LaunchScreen.storyboard.ios olivia/LaunchScreen.storyboard; fi
     @git checkout olivia.xcodeproj/project.pbxproj olivia/Info.plist 2>/dev/null || echo "⚠️  Not a git repo or no changes to restore"
-    @echo "✅ Nuclear clean complete"
+    @echo "Nuclear clean complete"
+
+# Deploy Solana contracts (delegates to separate script)
+deploy-solana:
+    @echo "🚀 Deploying OLIVIA DAO to Solana..."
+    @echo "This will run the dedicated Solana deployment script"
+    @cd Solana && ./deploy-mainnet.sh
