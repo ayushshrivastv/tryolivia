@@ -9,15 +9,15 @@
 ///
 /// # OliviaProtocol
 ///
-/// Defines the application-layer protocol for OLIVIA mesh networking, including
+/// Defines the application-layer protocol for OLIVIA Nostr relay networking, including
 /// message types, packet structures, and encoding/decoding logic.
 ///
 /// ## Overview
-/// OliviaProtocol implements a binary protocol optimized for Bluetooth LE's
-/// constrained bandwidth and MTU limitations. It provides:
+/// OliviaProtocol implements a binary protocol optimized for Solana+Nostr+Noise network LE's
+/// constrained bandwidth and transaction size limitations. It provides:
 /// - Efficient binary message encoding
 /// - Message fragmentation for large payloads
-/// - TTL-based routing for mesh networks
+/// - TTL-based routing for network networks
 /// - Privacy features like padding and timing obfuscation
 /// - Integration points for end-to-end encryption
 ///
@@ -31,7 +31,7 @@
 /// ## Message Flow
 /// 1. **Creation**: Messages are created with type, content, and metadata
 /// 2. **Encoding**: Converted to binary format with proper field ordering
-/// 3. **Fragmentation**: Split if larger than BLE MTU (512 bytes)
+/// 3. **Fragmentation**: Split if larger than Solana+Nostr+Noise transaction size (512 bytes)
 /// 4. **Transmission**: Sent via BLEService
 /// 5. **Routing**: Relayed by intermediate nodes (TTL decrements)
 /// 6. **Reassembly**: Fragments collected and reassembled
@@ -59,7 +59,6 @@
 ///
 
 import Foundation
-import CoreBluetooth
 
 // MARK: - Message Types
 
@@ -174,8 +173,8 @@ protocol OliviaDelegate: AnyObject {
     // Low-level events for better separation of concerns
     func didReceiveNoisePayload(from peerID: PeerID, type: NoisePayloadType, payload: Data, timestamp: Date)
 
-    // Bluetooth state updates for user notifications
-    func didUpdateBluetoothState(_ state: CBManagerState)
+    // Solana+Nostr+Noise network state updates for user notifications
+    func didUpdateNetworkState(_ isConnected: Bool)
     func didReceivePublicMessage(from peerID: PeerID, nickname: String, content: String, timestamp: Date)
 }
 

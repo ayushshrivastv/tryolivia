@@ -4,7 +4,7 @@ import Combine
 
 // Minimal Nostr transport conforming to Transport for offline sending
 final class NostrTransport: Transport {
-    // Provide BLE short peer ID for OLIVIA embedding
+    // Provide Solana+Nostr+Noise short peer ID for OLIVIA embedding
     var senderPeerID = PeerID(str: "")
 
     // Throttle READ receipts to avoid relay rate limits

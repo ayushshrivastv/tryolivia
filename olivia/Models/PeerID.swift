@@ -12,8 +12,8 @@ struct PeerID: Equatable, Hashable {
     enum Prefix: String, CaseIterable {
         /// When no prefix is provided
         case empty = ""
-        /// `"mesh:"`
-        case mesh = "mesh:"
+        /// `"network:"`
+        case network = "network:"
         /// `"name:"`
         case name = "name:"
         /// `"noise:"` (+ 64 characters hex)

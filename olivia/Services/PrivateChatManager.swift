@@ -20,7 +20,7 @@ final class PrivateChatManager: ObservableObject {
     var sentReadReceipts: Set<String> = []  // Made accessible for ChatViewModel
     
     weak var meshService: Transport?
-    // Route acks/receipts via MessageRouter (chooses mesh or Nostr)
+    // Route acks/receipts via MessageRouter (chooses network or Nostr)
     weak var messageRouter: MessageRouter?
     
     init(meshService: Transport? = nil) {

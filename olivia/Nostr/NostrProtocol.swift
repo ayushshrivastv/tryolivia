@@ -1,7 +1,6 @@
 import OliviaLogger
 import Foundation
 import CryptoKit
-import P256K
 import Security
 
 // Note: This file depends on Data extension from BinaryEncodingUtils.swift

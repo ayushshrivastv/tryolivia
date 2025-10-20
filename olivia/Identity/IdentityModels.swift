@@ -10,7 +10,7 @@
 /// # IdentityModels
 ///
 /// Defines OLIVIA's innovative three-layer identity model that balances
-/// privacy, security, and usability in a decentralized mesh network.
+/// privacy, security, and usability in a decentralized Nostr relay network with Noise encryption.
 ///
 /// ## Overview
 /// OLIVIA's identity system separates concerns across three distinct layers:

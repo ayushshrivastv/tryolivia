@@ -35,7 +35,7 @@ struct LocationChannelsSheet: View {
         static let invalidGeohash = String(localized: "location_channels.error.invalid_geohash", comment: "Error shown when a custom geohash is invalid")
 
         static func meshTitle(_ count: Int) -> String {
-            let label = String(localized: "location_channels.mesh_label", comment: "Label for the mesh channel row")
+            let label = String(localized: "location_channels.mesh_label", comment: "Label for the network channel row")
             return rowTitle(label: label, count: count)
         }
 
@@ -165,8 +165,8 @@ struct LocationChannelsSheet: View {
     private var channelList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                channelRow(title: Strings.meshTitle(meshCount()), subtitlePrefix: Strings.subtitlePrefix(geohash: "bluetooth", coverage: bluetoothRangeString()), isSelected: isMeshSelected, titleColor: standardBlue, titleBold: meshCount() > 0) {
-                    manager.select(ChannelID.mesh)
+                channelRow(title: Strings.meshTitle(meshCount()), subtitlePrefix: Strings.subtitlePrefix(geohash: "Solana+Nostr+Noise network", coverage: bluetoothRangeString()), isSelected: isMeshSelected, titleColor: standardBlue, titleBold: meshCount() > 0) {
+                    manager.select(ChannelID.network)
                     isPresented = false
                 }
                 .padding(.vertical, 6)
@@ -379,7 +379,7 @@ struct LocationChannelsSheet: View {
     }
 
     private var isMeshSelected: Bool {
-        if case .mesh = manager.selectedChannel { return true }
+        if case .network = manager.selectedChannel { return true }
         return false
     }
 
@@ -430,7 +430,7 @@ struct LocationChannelsSheet: View {
         .onTapGesture(perform: action)
     }
 
-    // Split a title like "#mesh [3 people]" into base and suffix "[3 people]"
+    // Split a title like "#network [3 people]" into base and suffix "[3 people]"
     private func splitTitleAndCount(_ s: String) -> (base: String, countSuffix: String?) {
         guard let idx = s.lastIndex(of: "[") else { return (s, nil) }
         let prefix = String(s[..<idx]).trimmingCharacters(in: .whitespaces)
@@ -440,7 +440,7 @@ struct LocationChannelsSheet: View {
 
     // MARK: - Helpers for counts
     private func meshCount() -> Int {
-        // Count mesh-connected OR mesh-reachable peers (exclude self)
+        // Count network-connected OR network-reachable peers (exclude self)
         let myID = viewModel.meshService.myPeerID
         return viewModel.allPeers.reduce(0) { acc, peer in
             if peer.peerID != myID && (peer.isConnected || peer.isReachable) { return acc + 1 }
@@ -587,7 +587,7 @@ extension LocationChannelsSheet {
                 return Locale.current.usesMetricSystem
             }
         }()
-        // Approximate Bluetooth LE range for typical mobile devices; environment dependent
+        // Approximate Solana+Nostr+Noise network LE range for typical mobile devices; environment dependent
         return usesMetric ? "~10–50 m" : "~30–160 ft"
     }
 

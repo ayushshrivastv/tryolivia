@@ -3,7 +3,7 @@
 // olivia
 //
 //
-// This file is part of OLIVIA Emergency Communication Network
+// This file is part of OLIVIA Communication Network
 // Licensed under the MIT License - see LICENSE file for details
 //
 import Foundation

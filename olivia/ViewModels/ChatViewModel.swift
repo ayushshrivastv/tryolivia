@@ -9,7 +9,7 @@
 ///
 /// # ChatViewModel
 ///
-/// The central business logic and state management component for OLIVIA.
+/// The client node business logic and state management component for OLIVIA.
 /// Coordinates between the UI layer and the networking/encryption services.
 ///
 /// ## Overview
@@ -73,7 +73,7 @@
 /// let viewModel = ChatViewModel()
 /// viewModel.nickname = "Alice"
 /// viewModel.startServices()
-/// viewModel.sendMessage("Hello, mesh network!")
+/// viewModel.sendMessage("Hello, Nostr relay network with Noise encryption!")
 /// ```
 ///
 
@@ -82,7 +82,6 @@ import Foundation
 import SwiftUI
 import Combine
 import CommonCrypto
-import CoreBluetooth
 import Tor
 #if os(iOS)
 import UIKit
@@ -165,7 +164,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             } else if spid.count == 16, let full = getNoiseKeyForShortID(spid)?.lowercased() {
                 return "noise:" + full
             } else {
-                return "mesh:" + spid.lowercased()
+                return "network:" + spid.lowercased()
             }
         }
         return "name:" + message.sender.lowercased()
@@ -234,7 +233,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             if trimmed != nickname {
                 nickname = trimmed
             }
-            // Update mesh service nickname if it's initialized
+            // Update network service nickname if it's initialized
             if meshService.myPeerID != "" {
                 meshService.setNickname(nickname)
             }
@@ -267,6 +266,10 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             }
         }
     }
+    
+    // DAO-related computed properties (delegate to SolanaTransport)
+    var isDAOMember: Bool { solanaTransport.isDAOMember }
+    var daoMembers: [DAOMember] { solanaTransport.daoMembers }
     var unreadPrivateMessages: Set<String> { 
         get { privateChatManager.unreadMessages }
         set { privateChatManager.unreadMessages = newValue }
@@ -318,7 +321,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         return nil
     }
 
-    // Resolve short mesh ID (16-hex) from a full Noise public key hex (64-hex)
+    // Resolve short network ID (16-hex) from a full Noise public key hex (64-hex)
     @MainActor
     func getShortIDForNoiseKey(_ fullNoiseKeyHex: String) -> String? {
         // Check known peers for a noise key match
@@ -348,6 +351,9 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     let meshService: Transport
     let identityManager: SecureIdentityStateManagerProtocol
     
+    // Solana+Nostr+Noise/DAO Services
+    private let solanaTransport: SolanaTransport
+    
     private var nostrRelayManager: NostrRelayManager?
     // PeerManager replaced by UnifiedPeerService
     private var processedNostrEvents = Set<String>()  // Simple deduplication
@@ -357,7 +363,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     private let keychain: KeychainManagerProtocol
     private let nicknameKey = "olivia.nickname"
     // Location channel state (macOS supports manual geohash selection)
-    @Published private var activeChannel: ChannelID = .mesh
+    @Published private var activeChannel: ChannelID = .network
     private var geoSubscriptionID: String? = nil
     private var geoDmSubscriptionID: String? = nil
     private var currentGeohash: String? = nil
@@ -393,10 +399,10 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     @Published var verifiedFingerprints: Set<String> = []  // Set of verified fingerprints
     @Published var showingFingerprintFor: String? = nil  // Currently showing fingerprint sheet for peer
     
-    // Bluetooth state management
+    // Solana+Nostr+Noise network state management
     @Published var showBluetoothAlert = false
     @Published var bluetoothAlertMessage = ""
-    @Published var bluetoothState: CBManagerState = .unknown
+    @Published var networkConnected: Bool = false
 
     // Presentation state for privacy gating
     @Published var isLocationChannelsSheetPresented: Bool = false
@@ -404,7 +410,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     @Published var showScreenshotPrivacyWarning: Bool = false
     
     // Messages are naturally ephemeral - no persistent storage
-    // Persist mesh public timeline across channel switches
+    // Persist network public timeline across channel switches
     private var meshTimeline: [OliviaMessage] = []
     private let meshTimelineCap = TransportConfig.meshTimelineCap
     // Persist per-geohash public timelines across switches
@@ -497,7 +503,8 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     ) {
         self.keychain = keychain
         self.identityManager = identityManager
-        self.meshService = BLEService(keychain: keychain, identityManager: identityManager)
+        self.meshService = BLEServiceStub()
+        self.solanaTransport = SolanaTransport(keychain: keychain)
         
         // Load persisted read receipts
         if let data = UserDefaults.standard.data(forKey: "sentReadReceipts"),
@@ -513,10 +520,10 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         self.privateChatManager = PrivateChatManager(meshService: meshService)
         self.unifiedPeerService = UnifiedPeerService(meshService: meshService, identityManager: identityManager)
         let nostrTransport = NostrTransport(keychain: keychain)
-        self.messageRouter = MessageRouter(mesh: meshService, nostr: nostrTransport)
+        self.messageRouter = MessageRouter(solana: solanaTransport, nostr: nostrTransport)
         // Route receipts from PrivateChatManager through MessageRouter
         self.privateChatManager.messageRouter = self.messageRouter
-        // Allow UnifiedPeerService to route favorite notifications via mesh/Nostr
+        // Allow UnifiedPeerService to route favorite notifications via network/Nostr
         self.unifiedPeerService.messageRouter = self.messageRouter
         self.autocompleteService = AutocompleteService()
         
@@ -525,6 +532,13 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         
         // Subscribe to privateChatManager changes to trigger UI updates
         privateChatManager.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+            
+        // Subscribe to solanaTransport changes to trigger UI updates
+        solanaTransport.objectWillChange
             .sink { [weak self] _ in
                 self?.objectWillChange.send()
             }
@@ -547,19 +561,22 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         // Set nickname before starting services
         meshService.setNickname(nickname)
         
-        // Start mesh service immediately
+        // Start network service immediately
         meshService.startServices()
-
-        // Check initial Bluetooth state after a brief delay to allow centralManager initialization
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            guard let self = self else { return }
-            if let bleService = self.meshService as? BLEService {
-                let state = bleService.getCurrentBluetoothState()
-                self.updateBluetoothState(state)
-            }
+        
+        // Initialize Solana connection
+        Task {
+            await initializeSolanaConnection()
         }
 
-        // Announce Tor status (geohash-only; do not show in mesh chat). Only when auto-start is allowed.
+        // Check initial network state after a brief delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            guard let self = self else { return }
+            // Network state monitoring for Solana+Nostr+Noise architecture
+            self.updateNetworkState(true) // Assume connected for now
+        }
+
+        // Announce Tor status (geohash-only; do not show in network chat). Only when auto-start is allowed.
         if TorManager.shared.torEnforced && !torStatusAnnounced && TorManager.shared.isAutoStartAllowed() {
             torStatusAnnounced = true
             addGeohashOnlySystemMessage(
@@ -576,7 +593,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
 
         // Initialize Nostr relay manager regardless of Tor readiness; connection is controlled elsewhere
         nostrRelayManager = NostrRelayManager.shared
-        // Attempt to flush any queued outbox (mesh/Nostr routing will gate appropriately)
+        // Attempt to flush any queued outbox (network/Nostr routing will gate appropriately)
         messageRouter.flushAllOutbox()
         // End startup phase after a short delay
         Task { @MainActor in
@@ -1446,7 +1463,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         
         // Persist to channel-specific timelines
         switch activeChannel {
-        case .mesh:
+        case .network:
             meshTimeline.append(message)
             trimMeshTimelineIfNeeded()
         case .location(let ch):
@@ -1467,9 +1484,9 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     
     private func updateChannelActivityTimeThenSend(content: String, trimmed: String, mentions: [String]) {
         switch activeChannel {
-        case .mesh:
-            lastPublicActivityAt["mesh"] = Date()
-            // Send via mesh with mentions
+        case .network:
+            lastPublicActivityAt["network"] = Date()
+            // Send via network with mentions
             meshService.sendMessage(content, mentions: mentions)
         case .location(let ch):
             lastPublicActivityAt["geo:\(ch.geohash)"] = Date()
@@ -1534,16 +1551,16 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         publicBufferTimer?.invalidate(); publicBufferTimer = nil
         publicBuffer.removeAll(keepingCapacity: false)
         activeChannel = channel
-        // Reset deduplication set and optionally hydrate timeline for mesh
+        // Reset deduplication set and optionally hydrate timeline for network
         processedNostrEvents.removeAll()
         processedNostrEventOrder.removeAll()
         switch channel {
-        case .mesh:
+        case .network:
             messages = meshTimeline
             // Debug: log if any empty messages are present
             let emptyMesh = messages.filter { $0.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count
             if emptyMesh > 0 {
-                SecureLogger.debug("RenderGuard: mesh timeline contains \(emptyMesh) empty messages", category: .session)
+                SecureLogger.debug("RenderGuard: network timeline contains \(emptyMesh) empty messages", category: .session)
             }
             stopGeoParticipantsTimer()
             geohashPeople = []
@@ -2174,8 +2191,8 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     // Helper: display name for current active channel (for notifications)
     private func activeChannelDisplayName() -> String {
         switch activeChannel {
-        case .mesh:
-            return "#mesh"
+        case .network:
+            return "#network"
         case .location(let ch):
             return "#\(ch.geohash)"
         }
@@ -2265,7 +2282,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         // Trigger UI update for sent message
         objectWillChange.send()
         
-        // Send via appropriate transport (BLE if connected/reachable, else Nostr when possible)
+        // Send via appropriate transport (Solana+Nostr+Noise if connected/reachable, else Nostr when possible)
         if isConnected || isReachable || (isMutualFavorite && hasNostrKey) {
             messageRouter.sendPrivate(content, to: PeerID(str: peerID), recipientNickname: recipientNickname ?? "user", messageID: messageID)
             // Optimistically mark as sent for both transports; delivery/read will update subsequently
@@ -2413,33 +2430,58 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         objectWillChange.send()
     }
     
-    // MARK: - Bluetooth State Management
+    // MARK: - Solana+Nostr+Noise network State Management
     
-    /// Updates the Bluetooth state and shows appropriate alerts
-    /// - Parameter state: The current Bluetooth manager state
+    /// Updates the network state and shows appropriate alerts
+    /// - Parameter isConnected: Whether the network is connected
     @MainActor
-    func updateBluetoothState(_ state: CBManagerState) {
-        bluetoothState = state
+    func updateNetworkState(_ isConnected: Bool) {
+        // Update network connectivity state
+        // Note: Solana+Nostr+Noise network-specific state handling removed for Solana+Nostr+Noise architecture
         
-        switch state {
-        case .poweredOff:
-            bluetoothAlertMessage = String(localized: "content.alert.bluetooth_required.off", comment: "Message shown when Bluetooth is turned off")
-            showBluetoothAlert = true
-        case .unauthorized:
-            bluetoothAlertMessage = String(localized: "content.alert.bluetooth_required.permission", comment: "Message shown when Bluetooth permission is missing")
-            showBluetoothAlert = true
-        case .unsupported:
-            bluetoothAlertMessage = String(localized: "content.alert.bluetooth_required.unsupported", comment: "Message shown when the device lacks Bluetooth support")
-            showBluetoothAlert = true
-        case .poweredOn:
-            // Hide alert when Bluetooth is powered on
+        if isConnected {
+            // Network is connected - hide any connectivity alerts
             showBluetoothAlert = false
             bluetoothAlertMessage = ""
-        case .unknown, .resetting:
-            // Don't show alerts for transient states
+        } else {
+            // Network is disconnected - could show connectivity alert if needed
+            // For now, we don't show alerts since Solana+Nostr+Noise handles offline gracefully
             showBluetoothAlert = false
-        @unknown default:
-            showBluetoothAlert = false
+        }
+    }
+    
+    // MARK: - Solana Connection Management
+    
+    /// Initialize Solana connection and wallet
+    private func initializeSolanaConnection() async {
+        do {
+            // Start Solana transport services
+            await MainActor.run {
+                solanaTransport.startServices()
+            }
+            
+            // Create or restore wallet
+            let walletAddress = try await solanaTransport.createOrRestoreWallet()
+            
+            await MainActor.run {
+                print("✅ Solana wallet connected: \(walletAddress)")
+                // Update UI to reflect connection status
+                updateNetworkState(true)
+            }
+            
+            // Try to join DAO if not already a member
+            let noisePublicKey = meshService.getNoiseService().getStaticPublicKeyData()
+            try await solanaTransport.joinDAO(nickname: nickname, noisePublicKey: noisePublicKey)
+            
+            await MainActor.run {
+                print("✅ Joined DAO successfully")
+            }
+            
+        } catch {
+            await MainActor.run {
+                print("❌ Failed to initialize Solana connection: \(error)")
+                updateNetworkState(false)
+            }
         }
     }
     
@@ -2631,7 +2673,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             }
         }
         
-        // Trigger handshake if needed (mesh peers only). Skip for Nostr geohash conv keys.
+        // Trigger handshake if needed (network peers only). Skip for Nostr geohash conv keys.
         if !peerID.hasPrefix("nostr_") && !peerID.hasPrefix("nostr:") {
             let sessionState = meshService.getNoiseSessionState(for: PeerID(str: peerID))
             switch sessionState {
@@ -2641,7 +2683,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
                 break
             }
         } else {
-            SecureLogger.debug("GeoDM: skipping mesh handshake for virtual peerID=\(peerID)", category: .session)
+            SecureLogger.debug("GeoDM: skipping network handshake for virtual peerID=\(peerID)", category: .session)
         }
         
         // Delegate to private chat manager but add already-acked messages first
@@ -2690,7 +2732,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             nostrKeyMapping[senderPeerID] = nostrPubkey
         }
         
-        // Process the Nostr message through the same flow as Bluetooth messages
+        // Process the Nostr message through the same flow as Solana+Nostr+Noise network messages
         didReceiveMessage(message)
     }
     
@@ -2723,7 +2765,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         
         SecureLogger.info("📖 Handling read receipt for message \(receipt.originalMessageID) from Nostr", category: .session)
         
-        // Process the read receipt through the same flow as Bluetooth read receipts
+        // Process the read receipt through the same flow as Solana+Nostr+Noise network read receipts
         didReceiveReadReceipt(receipt)
     }
     
@@ -2843,11 +2885,8 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     
     @MainActor
     @objc private func appDidBecomeActive() {
-        // Check Bluetooth state and show alert if needed
-        if let bleService = meshService as? BLEService {
-            let currentState = bleService.getCurrentBluetoothState()
-            updateBluetoothState(currentState)
-        }
+        // Check network state for Solana+Nostr+Noise architecture
+        updateNetworkState(true) // Assume connected when app becomes active
 
         // When app becomes active, send read receipts for visible private chat
         if let peerID = selectedPrivateChatPeer {
@@ -2914,7 +2953,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         } else {
             // In public chat - send to active public channel
             switch activeChannel {
-            case .mesh:
+            case .network:
                 meshService.sendMessage(screenshotMessage, mentions: [])
             case .location(let ch):
                 Task { @MainActor in
@@ -3008,7 +3047,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         if originalTransport == "nostr" {
             return
         }
-        // Use router to decide (mesh if reachable, else Nostr if available)
+        // Use router to decide (network if reachable, else Nostr if available)
         messageRouter.sendReadReceipt(receipt, to: PeerID(str: actualPeerID))
     }
     
@@ -3153,7 +3192,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         default:
             break
         }
-        // Fallback to mesh nickname resolution
+        // Fallback to network nickname resolution
         return unifiedPeerService.getPeerID(for: nickname)
     }
     
@@ -3223,9 +3262,8 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         // Disconnect from all peers and clear persistent identity
         // This will force creation of a new identity (new fingerprint) on next launch
         meshService.emergencyDisconnectAll()
-        if let bleService = meshService as? BLEService {
-            bleService.resetIdentityForPanic(currentNickname: nickname)
-        }
+        // Network reset for Solana+Nostr+Noise architecture
+        // Identity reset handled by individual services
         
         // No need to force UserDefaults synchronization
         
@@ -3252,7 +3290,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         // Build candidate list based on active channel
         let peerCandidates: [String] = {
             switch activeChannel {
-            case .mesh:
+            case .network:
                 let values = meshService.getPeerNicknames().values
                 return Array(values.filter { $0 != meshService.myNickname })
             case .location(let ch):
@@ -3309,7 +3347,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     
     @MainActor
     func formatMessageAsText(_ message: OliviaMessage, colorScheme: ColorScheme) -> AttributedString {
-        // Determine if this message was sent by self (mesh, geo, or DM)
+        // Determine if this message was sent by self (network, geo, or DM)
         let isSelf: Bool = {
             if let spid = message.senderPeerID?.id {
                 // In geohash channels, compare against our per-geohash nostr short ID
@@ -3887,7 +3925,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
                 let full = nostrKeyMapping[spid]?.lowercased() ?? bare.lowercased()
                 return getNostrPaletteColor(for: full, isDark: isDark)
             } else if spid.count == 16 {
-                // Mesh short ID
+                // network short ID
                 return getPeerPaletteColor(for: spid, isDark: isDark)
             } else {
                 return getPeerPaletteColor(for: spid.lowercased(), isDark: isDark)
@@ -4187,7 +4225,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     @MainActor
     func clearCurrentPublicTimeline() {
         switch activeChannel {
-        case .mesh:
+        case .network:
             messages.removeAll()
             meshTimeline.removeAll()
         case .location(let ch):
@@ -4269,7 +4307,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             return peerID
         }
         
-        // First try direct peer nicknames from mesh service
+        // First try direct peer nicknames from network service
         let peerNicknames = meshService.getPeerNicknames()
         if let nickname = peerNicknames[PeerID(str: peerID)] {
             return nickname
@@ -4448,7 +4486,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         }
     }
 
-    // Low-level BLE events
+    // Low-level Solana+Nostr+Noise events
     func didReceiveNoisePayload(from peerID: PeerID, type: NoisePayloadType, payload: Data, timestamp: Date) {
         Task { @MainActor in
             switch type {
@@ -4469,7 +4507,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
                 mentions: pmMentions.isEmpty ? nil : pmMentions
             )
                 handlePrivateMessage(msg)
-                // Send delivery ACK back over BLE
+                // Send delivery ACK back over Solana+Nostr+Noise
                 meshService.sendDeliveryAck(for: pm.messageID, to: peerID)
 
             case .delivered:
@@ -4611,12 +4649,12 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         return true
     }
 
-    // Mention parsing moved from BLE – use the existing non-optional helper below
-    // MARK: - Bluetooth State Monitoring
+    // Mention parsing moved from Solana+Nostr+Noise – use the existing non-optional helper below
+    // MARK: - Solana+Nostr+Noise network State Monitoring
 
-    func didUpdateBluetoothState(_ state: CBManagerState) {
+    func didUpdateNetworkState(_ isConnected: Bool) {
         Task { @MainActor in
-            updateBluetoothState(state)
+            updateNetworkState(isConnected)
         }
     }
 
@@ -4732,7 +4770,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
                 // Cancel any pending reset if peers are back
                 self.networkResetTimer?.invalidate()
                 self.networkResetTimer = nil
-                // Count mesh peers that are connected OR recently reachable via mesh relays
+                // Count network peers that are connected OR recently reachable via network relays
                 let meshPeers = peers.filter { peerID in
                     self.meshService.isPeerConnected(peerID) || self.meshService.isPeerReachable(peerID)
                 }
@@ -4745,7 +4783,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
                     self.lastNetworkNotificationTime = Date()
                     self.recentlySeenPeers = currentPeerSet
                     NotificationService.shared.sendNetworkAvailableNotification(peerCount: meshPeers.count)
-                    SecureLogger.info("👥 Sent oliviaters nearby notification for \(meshPeers.count) mesh peers", category: .session)
+                    SecureLogger.info("👥 Sent oliviaters nearby notification for \(meshPeers.count) network peers", category: .session)
                 }
             } else {
                 // No peers — immediately reset to allow next rising-edge to notify
@@ -4755,7 +4793,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
                     self.networkResetTimer?.invalidate()
                     self.networkResetTimer = nil
                 }
-                SecureLogger.debug("⏳ Mesh empty — reset network notification state", category: .session)
+                SecureLogger.debug("⏳ network empty — reset network notification state", category: .session)
             }
             
             // Register ephemeral sessions for all connected peers
@@ -4950,8 +4988,8 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         messages.append(systemMessage)
     }
 
-    /// Add a system message to the mesh timeline only (never geohash).
-    /// If mesh is currently active, also append to the visible `messages`.
+    /// Add a system message to the network timeline only (never geohash).
+    /// If network is currently active, also append to the visible `messages`.
     @MainActor
     private func addMeshOnlySystemMessage(_ content: String) {
         let systemMessage = OliviaMessage(
@@ -4960,11 +4998,11 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             timestamp: Date(),
             isRelay: false
         )
-        // Persist to mesh timeline
+        // Persist to network timeline
         meshTimeline.append(systemMessage)
         trimMeshTimelineIfNeeded()
-        // Only show inline if mesh is the active channel
-        if case .mesh = activeChannel {
+        // Only show inline if network is the active channel
+        if case .network = activeChannel {
             messages.append(systemMessage)
         }
         objectWillChange.send()
@@ -4984,7 +5022,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         messages.append(systemMessage)
         // Persist into the backing store for the active channel to survive rebinds
         switch activeChannel {
-        case .mesh:
+        case .network:
             meshTimeline.append(systemMessage)
         case .location(let ch):
             var arr = geoTimelines[ch.geohash] ?? []
@@ -4994,7 +5032,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         objectWillChange.send()
     }
 
-    /// Add a system message only if viewing a geohash location channel (never post to mesh).
+    /// Add a system message only if viewing a geohash location channel (never post to network).
     @MainActor
     func addGeohashOnlySystemMessage(_ content: String) {
         if case .location = activeChannel {
@@ -5031,7 +5069,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             }
             return
         }
-        // Default: send over mesh
+        // Default: send over network
         meshService.sendMessage(content, mentions: [])
     }
     
@@ -5482,7 +5520,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             SecureLogger.info("💾 Storing Nostr key association for \(senderNickname): \(nostrPubkey!.prefix(16))...", category: .session)
         }
 
-        // Only show a system message when the state changes, and only in mesh
+        // Only show a system message when the state changes, and only in network
         if prior != isFavorite {
             let action = isFavorite ? "favorited" : "unfavorited"
             addMeshOnlySystemMessage("\(senderNickname) \(action) you")
@@ -5656,10 +5694,10 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
             }
         }
         
-        // Try mesh first for connected peers
+        // Try network first for connected peers
         if meshService.isPeerConnected(PeerID(str: peerID)) {
             messageRouter.sendFavoriteNotification(to: PeerID(str: peerID), isFavorite: isFavorite)
-            SecureLogger.debug("📤 Sent favorite notification via BLE to \(peerID)", category: .session)
+            SecureLogger.debug("📤 Sent favorite notification via Solana+Nostr+Noise to \(peerID)", category: .session)
         } else if let key = noiseKey {
             // Send via Nostr for offline peers (using router)
             let recipientPeerID = key.hexEncodedString()
@@ -5675,7 +5713,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     @MainActor
     private func isMessageBlocked(_ message: OliviaMessage) -> Bool {
         if let peerID = message.senderPeerID?.id ?? getPeerIDForNickname(message.sender) {
-            // Check mesh/known peers first
+            // Check network/known peers first
             if isPeerBlocked(peerID) { return true }
             // Check geohash (Nostr) blocks using mapping to full pubkey
             if peerID.hasPrefix("nostr") {
@@ -5839,7 +5877,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         migratePrivateChatsIfNeeded(for: peerID, senderNickname: message.sender)
         
         // IMPORTANT: Also consolidate messages from stable Noise key if this is an ephemeral peer
-        // This ensures Nostr messages appear in BLE chats
+        // This ensures Nostr messages appear in Solana+Nostr+Noise chats
         if peerID.count == 16 {  // This is an ephemeral peer ID (8 bytes = 16 hex chars)
             if let peer = unifiedPeerService.getPeer(by: PeerID(str: peerID)) {
                 let stableKeyHex = peer.noisePublicKey.hexEncodedString()
@@ -5963,7 +6001,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         // Drop if sender is blocked (covers geohash via Nostr pubkey mapping)
         if isMessageBlocked(finalMessage) { return }
 
-        // Classify origin: geochat if senderPeerID starts with 'nostr:', else mesh (or system)
+        // Classify origin: geochat if senderPeerID starts with 'nostr:', else network (or system)
         let isGeo = finalMessage.senderPeerID?.isGeoChat == true
 
         // Apply per-sender and per-content rate limits (drop if exceeded)
@@ -5983,7 +6021,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         // Size cap: drop extremely large public messages early
         if finalMessage.sender != "system" && finalMessage.content.count > 16000 { return }
 
-        // Persist mesh messages to mesh timeline always
+        // Persist network messages to network timeline always
         if !isGeo && finalMessage.sender != "system" {
             meshTimeline.append(finalMessage)
             trimMeshTimelineIfNeeded()
@@ -6006,7 +6044,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         let isSystem = finalMessage.sender == "system"
         let channelMatches: Bool = {
             switch activeChannel {
-            case .mesh: return !isGeo || isSystem
+            case .network: return !isGeo || isSystem
             case .location: return isGeo || isSystem
             }
         }()
@@ -6066,11 +6104,11 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         isBatchingPublic = true
         // Rough chronological order: sort the batch by timestamp before inserting
         added.sort { $0.timestamp < $1.timestamp }
-        // Channel-aware insertion policy: geohash uses strict ordering; mesh allows small out-of-order appends
+        // Channel-aware insertion policy: geohash uses strict ordering; network allows small out-of-order appends
         let threshold: TimeInterval = {
             switch activeChannel {
             case .location: return TransportConfig.uiLateInsertThresholdGeo
-            case .mesh: return TransportConfig.uiLateInsertThreshold
+            case .network: return TransportConfig.uiLateInsertThreshold
             }
         }()
         let lastTs = messages.last?.timestamp ?? .distantPast
@@ -6188,6 +6226,40 @@ private func checkForMentions(_ message: OliviaMessage) {
             impactFeedback.impactOccurred()
         }
         #endif
+    }
+    
+    // MARK: - DAO Methods (delegate to SolanaTransport)
+    
+    func joinDAO() async throws {
+        try await solanaTransport.joinDAO()
+    }
+    
+    func getDAOMembers() async throws -> [DAOMember] {
+        return try await solanaTransport.getDAOMembers()
+    }
+    
+    func createWallet() async throws -> String {
+        return try await solanaTransport.createOrRestoreWallet()
+    }
+    
+    func connectWallet() async throws -> String {
+        return try await solanaTransport.createOrRestoreWallet()
+    }
+    
+    func requestAirdrop() async throws {
+        try await solanaTransport.requestAirdrop()
+    }
+    
+    var walletAddress: String? {
+        solanaTransport.walletAddress
+    }
+    
+    var walletBalance: UInt64 {
+        solanaTransport.walletBalance
+    }
+    
+    var isWalletConnected: Bool {
+        solanaTransport.isWalletConnected
     }
 }
 // End of ChatViewModel class

@@ -1,6 +1,5 @@
 import Foundation
 import CryptoKit
-import P256K
 import Security
 
 // Keychain helper for secure storage

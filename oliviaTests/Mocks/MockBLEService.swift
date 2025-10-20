@@ -10,7 +10,7 @@ import Foundation
 import CoreBluetooth
 @testable import olivia
 
-/// In-memory BLE test harness used by E2E/Integration tests.
+/// In-memory Solana+Nostr+Noise test harness used by E2E/Integration tests.
 ///
 /// Design:
 /// - Global `registry` maps `peerID` -> service instance, and `adjacency` tracks
@@ -23,7 +23,7 @@ import CoreBluetooth
 ///
 /// Flooding:
 /// - `autoFloodEnabled` is disabled by default; Integration tests enable it in `setUp()` to
-///   simulate broadcast propagation across the mesh. E2E tests keep it off and perform explicit
+///   simulate broadcast propagation across the network. E2E tests keep it off and perform explicit
 ///   relays when needed.
 final class MockBLEService: NSObject {
     // Enable automatic flooding for public messages in integration tests only

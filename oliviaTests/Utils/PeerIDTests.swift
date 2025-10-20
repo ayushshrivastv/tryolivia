@@ -36,22 +36,22 @@ final class PeerIDTests: XCTestCase {
         XCTAssertEqual(peerID.prefix, .empty)
     }
     
-    // MARK: - Mesh prefix
+    // MARK: - network prefix
     
     func test_init_mesh_prefix_with16() {
-        let str = "mesh:" + hex16
+        let str = "network:" + hex16
         let peerID = PeerID(str: str)
         XCTAssertEqual(peerID.id, str)
         XCTAssertEqual(peerID.bare, hex16)
-        XCTAssertEqual(peerID.prefix, .mesh)
+        XCTAssertEqual(peerID.prefix, .network)
     }
     
     func test_init_mesh_prefix_with64() {
-        let str = "mesh:" + hex64
+        let str = "network:" + hex64
         let peerID = PeerID(str: str)
         XCTAssertEqual(peerID.id, str)
         XCTAssertEqual(peerID.bare, hex64)
-        XCTAssertEqual(peerID.prefix, .mesh)
+        XCTAssertEqual(peerID.prefix, .network)
     }
     
     // MARK: - Name prefix
@@ -130,11 +130,11 @@ final class PeerIDTests: XCTestCase {
     }
     
     func test_init_with_only_prefix_no_bare() {
-        let str = "mesh:"
+        let str = "network:"
         let peerID = PeerID(str: str)
         XCTAssertEqual(peerID.id, str)
         XCTAssertEqual(peerID.bare, "")
-        XCTAssertEqual(peerID.prefix, .mesh)
+        XCTAssertEqual(peerID.prefix, .network)
     }
     
     // MARK: - init?(data:)
@@ -425,8 +425,8 @@ final class PeerIDTests: XCTestCase {
         XCTAssertTrue(PeerID(str: "nostr:\(hex8)").isValid)
         XCTAssertTrue(PeerID(str: "nostr_\(hex8)").isValid)
 
-        let mesh = "mesh:abcdefg"
-        XCTAssertTrue(PeerID(str: "name:\(mesh)").isValid)
+        let network = "network:abcdefg"
+        XCTAssertTrue(PeerID(str: "name:\(network)").isValid)
 
         let name = "name:some_name"
         XCTAssertTrue(PeerID(str: "name:\(name)").isValid)

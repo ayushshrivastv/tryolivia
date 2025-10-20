@@ -46,7 +46,7 @@ struct OliviaApp: App {
                 .environmentObject(chatViewModel)
                 .onAppear {
                     NotificationDelegate.shared.chatViewModel = chatViewModel
-                    // Inject live Noise service into VerificationService to avoid creating new BLE instances
+                    // Inject live Noise service into VerificationService to avoid creating new Solana+Nostr+Noise instances
                     VerificationService.shared.configure(with: chatViewModel.meshService.getNoiseService())
                     // Prewarm Nostr identity and QR to make first VERIFY sheet fast
                     DispatchQueue.global(qos: .utility).async {
@@ -70,7 +70,7 @@ struct OliviaApp: App {
                 .onChange(of: scenePhase) { newPhase in
                     switch newPhase {
                     case .background:
-                        // Keep BLE mesh running in background; BLEService adapts scanning automatically
+                        // Keep Solana+Nostr+Noise network running in background; BLEService adapts scanning automatically
                         // Always send Tor to dormant on background for a clean restart later.
                         TorManager.shared.setAppForeground(false)
                         TorManager.shared.goDormantOnBackground()

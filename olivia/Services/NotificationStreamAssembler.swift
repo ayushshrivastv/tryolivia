@@ -19,7 +19,7 @@ struct NotificationStreamAssembler {
         var frames: [Data] = []
         var dropped: [UInt8] = []
         var reset = false
-        let maxFrameLength = TransportConfig.blePendingWriteBufferCapBytes
+        let maxFrameLength = TransportConfig.messagePendingBufferCapBytes
 
         let minHeaderBytes = 14 // version + type + ttl + timestamp(8) + flags + length(2)
         let minFramePrefix = minHeaderBytes + BinaryProtocol.senderIDSize

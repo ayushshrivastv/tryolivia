@@ -329,7 +329,7 @@ struct ContentView: View {
                     let contextKey: String = {
                         if let peer = privatePeer { return "dm:\(peer)" }
                         switch locationManager.selectedChannel {
-                        case .mesh: return "mesh"
+                        case .network: return "network"
                         case .location(let ch): return "geo:\(ch.geohash)"
                         }
                     }()
@@ -363,7 +363,7 @@ struct ContentView: View {
                                 let contextKey: String = {
                                     if let peer = privatePeer { return "dm:\(peer)" }
                                     switch locationManager.selectedChannel {
-                                    case .mesh: return "mesh"
+                                    case .network: return "network"
                                     case .location(let ch): return "geo:\(ch.geohash)"
                                     }
                                 }()
@@ -433,7 +433,7 @@ struct ContentView: View {
                     // For geohash senders, resolve display name via mapping (works for "nostr:" and "nostr_" keys)
                     selectedMessageSender = viewModel.geohashDisplayName(for: peerID)
                 } else {
-                    // Mesh sender: use current mesh nickname if available; otherwise fall back to last non-system message
+                    // network sender: use current network nickname if available; otherwise fall back to last non-system message
                     if let name = viewModel.meshService.peerNickname(peerID: PeerID(str: peerID)) {
                         selectedMessageSender = name
                     } else {
@@ -486,7 +486,7 @@ struct ContentView: View {
                     }
                     let contextKey: String = {
                         switch locationManager.selectedChannel {
-                        case .mesh: return "mesh"
+                        case .network: return "network"
                         case .location(let ch): return "geo:\(ch.geohash)"
                         }
                     }()
@@ -506,7 +506,7 @@ struct ContentView: View {
                         }
                         let contextKey: String = {
                             switch locationManager.selectedChannel {
-                            case .mesh: return "mesh"
+                            case .network: return "network"
                             case .location(let ch): return "geo:\(ch.geohash)"
                             }
                         }()
@@ -525,7 +525,7 @@ struct ContentView: View {
                     }
                     let contextKey: String = {
                         switch locationManager.selectedChannel {
-                        case .mesh: return "mesh"
+                        case .network: return "network"
                         case .location(let ch): return "geo:\(ch.geohash)"
                         }
                     }()
@@ -556,7 +556,7 @@ struct ContentView: View {
                         lastScrollTime = now
                         let contextKey: String = {
                             switch locationManager.selectedChannel {
-                            case .mesh: return "mesh"
+                            case .network: return "network"
                             case .location(let ch): return "geo:\(ch.geohash)"
                             }
                         }()
@@ -572,7 +572,7 @@ struct ContentView: View {
                             lastScrollTime = Date()
                         let contextKey: String = {
                             switch locationManager.selectedChannel {
-                            case .mesh: return "mesh"
+                            case .network: return "network"
                             case .location(let ch): return "geo:\(ch.geohash)"
                             }
                         }()
@@ -626,7 +626,7 @@ struct ContentView: View {
                 // When switching to a new geohash channel, scroll to the bottom
                 guard privatePeer == nil else { return }
                 switch newChannel {
-                case .mesh:
+                case .network:
                     break
                 case .location(let ch):
                     // Reset window size
@@ -905,8 +905,8 @@ struct ContentView: View {
                         .font(.oliviaSystem(size: 16, weight: .bold, design: .monospaced))
                         .foregroundColor(textColor)
                     Spacer()
-                    // Show QR in mesh on all platforms
-                    if case .mesh = locationManager.selectedChannel {
+                    // Show QR in network on all platforms
+                    if case .network = locationManager.selectedChannel {
                         Button(action: { showVerifySheet = true }) {
                             Image(systemName: "qrcode")
                                 .font(.oliviaSystem(size: 14))
@@ -1032,14 +1032,14 @@ struct ContentView: View {
             let n = viewModel.geohashPeople.count
             let standardGreen = (colorScheme == .dark) ? Color.green : Color(red: 0, green: 0.5, blue: 0)
             return (n, n > 0 ? standardGreen : Color.secondary)
-        case .mesh:
-            let counts = viewModel.allPeers.reduce(into: (others: 0, mesh: 0)) { counts, peer in
+        case .network:
+            let counts = viewModel.allPeers.reduce(into: (others: 0, network: 0)) { counts, peer in
                 guard peer.peerID != viewModel.meshService.myPeerID else { return }
-                if peer.isConnected { counts.mesh += 1; counts.others += 1 }
+                if peer.isConnected { counts.network += 1; counts.others += 1 }
                 else if peer.isReachable { counts.others += 1 }
             }
             let meshBlue = Color(hue: 0.60, saturation: 0.85, brightness: 0.82)
-            let color: Color = counts.mesh > 0 ? meshBlue : Color.secondary
+            let color: Color = counts.network > 0 ? meshBlue : Color.secondary
             return (counts.others, color)
         }
     }
@@ -1113,8 +1113,8 @@ struct ContentView: View {
                         String(localized: "content.accessibility.open_unread_private_chat", comment: "Accessibility label for the unread private chat button")
                     )
                 }
-                // Notes icon (mesh only and when location is authorized), to the left of #mesh
-                if case .mesh = locationManager.selectedChannel, locationManager.permissionState == .authorized {
+                // Notes icon (network only and when location is authorized), to the left of #network
+                if case .network = locationManager.selectedChannel, locationManager.permissionState == .authorized {
                     Button(action: {
                         // Kick a one-shot refresh and show the sheet immediately.
                         LocationChannelManager.shared.enableLocationChannels()
@@ -1158,13 +1158,13 @@ struct ContentView: View {
                 Button(action: { showLocationChannelsSheet = true }) {
                     let badgeText: String = {
                         switch locationManager.selectedChannel {
-                        case .mesh: return "#mesh"
+                        case .network: return "#network"
                         case .location(let ch): return "#\(ch.geohash)"
                         }
                     }()
                     let badgeColor: Color = {
                         switch locationManager.selectedChannel {
-                        case .mesh:
+                        case .network:
                             return Color(hue: 0.60, saturation: 0.85, brightness: 0.82)
                         case .location:
                             return (colorScheme == .dark) ? Color.green : Color(red: 0, green: 0.5, blue: 0)
@@ -1204,7 +1204,7 @@ struct ContentView: View {
                 .lineLimit(headerLineLimit)
                 .fixedSize(horizontal: true, vertical: false)
 
-                // QR moved to the PEOPLE header in the sidebar when on mesh channel
+                // QR moved to the PEOPLE header in the sidebar when on network channel
             }
             .layoutPriority(3)
             .onTapGesture {
@@ -1288,7 +1288,7 @@ struct ContentView: View {
         }
         .onAppear {
             updateNotesCounterSubscription()
-            if case .mesh = locationManager.selectedChannel,
+            if case .network = locationManager.selectedChannel,
                locationManager.permissionState == .authorized,
                LocationChannelManager.shared.availableChannels.isEmpty {
                 LocationChannelManager.shared.refreshChannels()
@@ -1296,7 +1296,7 @@ struct ContentView: View {
         }
         .onChange(of: locationManager.selectedChannel) { _ in
             updateNotesCounterSubscription()
-            if case .mesh = locationManager.selectedChannel,
+            if case .network = locationManager.selectedChannel,
                locationManager.permissionState == .authorized,
                LocationChannelManager.shared.availableChannels.isEmpty {
                 LocationChannelManager.shared.refreshChannels()
@@ -1305,7 +1305,7 @@ struct ContentView: View {
         .onChange(of: locationManager.availableChannels) { _ in updateNotesCounterSubscription() }
         .onChange(of: locationManager.permissionState) { _ in
             updateNotesCounterSubscription()
-            if case .mesh = locationManager.selectedChannel,
+            if case .network = locationManager.selectedChannel,
                locationManager.permissionState == .authorized,
                LocationChannelManager.shared.availableChannels.isEmpty {
                 LocationChannelManager.shared.refreshChannels()
@@ -1329,7 +1329,7 @@ struct ContentView: View {
     
     @ViewBuilder
     private func privateHeaderContent(for privatePeerID: String) -> some View {
-        // Prefer short (mesh) ID whenever available for encryption/session status; keep stable key for display resolution only.
+        // Prefer short (network) ID whenever available for encryption/session status; keep stable key for display resolution only.
         let headerPeerID: String = {
             if privatePeerID.count == 64 {
                 // Map stable Noise key to short ID if we know it (even if not directly connected)
@@ -1348,9 +1348,9 @@ struct ContentView: View {
                     return "#\(ch.geohash)/@\(disp)"
                 }
             }
-            // Try mesh/unified peer display
+            // Try network/unified peer display
             if let name = peer?.displayName { return name }
-            // Try direct mesh nickname (connected-only)
+            // Try direct network nickname (connected-only)
             if let name = viewModel.meshService.peerNickname(peerID: PeerID(str: headerPeerID)) { return name }
             // Try favorite nickname by stable Noise key
             if let fav = FavoritesPersistenceService.shared.getFavoriteStatus(for: Data(hexString: headerPeerID) ?? Data()),
@@ -1399,25 +1399,17 @@ struct ContentView: View {
                             // Show transport icon based on connection state (like peer list)
                             if let connectionState = peer?.connectionState {
                                 switch connectionState {
-                                case .bluetoothConnected:
-                                    // Radio icon for mesh connection
-                                    Image(systemName: "dot.radiowaves.left.and.right")
+                                case .solanaConnected:
+                                    // Solana+Nostr+Noise network connection
+                                    Image(systemName: "link.circle")
                                         .font(.oliviaSystem(size: 14))
                                         .foregroundColor(textColor)
                                         .accessibilityLabel(
-                                            String(localized: "content.accessibility.connected_mesh", comment: "Accessibility label for mesh-connected peer indicator")
-                                        )
-                                case .meshReachable:
-                                    // point.3 filled icon for reachable via mesh (not directly connected)
-                                    Image(systemName: "point.3.filled.connected.trianglepath.dotted")
-                                        .font(.oliviaSystem(size: 14))
-                                        .foregroundColor(textColor)
-                                        .accessibilityLabel(
-                                            String(localized: "content.accessibility.reachable_mesh", comment: "Accessibility label for mesh-reachable peer indicator")
+                                            String(localized: "content.accessibility.connected_mesh", comment: "Accessibility label for network-connected peer indicator")
                                         )
                                 case .nostrAvailable:
-                                    // Purple globe for Nostr
-                                    Image(systemName: "globe")
+                                    // Nostr relay connection
+                                    Image(systemName: "antenna.radiowaves.left.and.right")
                                         .font(.oliviaSystem(size: 14))
                                         .foregroundColor(.purple)
                                         .accessibilityLabel(
@@ -1428,12 +1420,12 @@ struct ContentView: View {
                                     EmptyView()
                                 }
                             } else if viewModel.meshService.isPeerReachable(PeerID(str: headerPeerID)) {
-                                // Fallback: reachable via mesh but not in current peer list
+                                // Fallback: reachable via network but not in current peer list
                                 Image(systemName: "point.3.filled.connected.trianglepath.dotted")
                                     .font(.oliviaSystem(size: 14))
                                     .foregroundColor(textColor)
                                     .accessibilityLabel(
-                                        String(localized: "content.accessibility.reachable_mesh", comment: "Accessibility label for mesh-reachable peer indicator")
+                                        String(localized: "content.accessibility.reachable_mesh", comment: "Accessibility label for network-reachable peer indicator")
                                     )
                             } else if isNostrAvailable {
                                 // Fallback to Nostr if peer not in list but is mutual favorite
@@ -1444,12 +1436,12 @@ struct ContentView: View {
                                         String(localized: "content.accessibility.available_nostr", comment: "Accessibility label for Nostr-available peer indicator")
                                     )
                             } else if viewModel.meshService.isPeerConnected(PeerID(str: headerPeerID)) || viewModel.connectedPeers.contains(headerPeerID) {
-                                // Fallback: if peer lookup is missing but mesh reports connected, show radio
+                                // Fallback: if peer lookup is missing but network reports connected, show radio
                                 Image(systemName: "dot.radiowaves.left.and.right")
                                     .font(.oliviaSystem(size: 14))
                                     .foregroundColor(textColor)
                                     .accessibilityLabel(
-                                        String(localized: "content.accessibility.connected_mesh", comment: "Accessibility label for mesh-connected peer indicator")
+                                        String(localized: "content.accessibility.connected_mesh", comment: "Accessibility label for network-connected peer indicator")
                                     )
                             }
                             
@@ -1547,7 +1539,7 @@ struct ContentView: View {
 extension ContentView {
     private func updateNotesCounterSubscription() {
         switch locationManager.selectedChannel {
-        case .mesh:
+        case .network:
             // Ensure we have a fresh one-shot location fix so building geohash is current
             if locationManager.permissionState == .authorized {
                 LocationChannelManager.shared.refreshChannels()

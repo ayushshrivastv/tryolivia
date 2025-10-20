@@ -23,9 +23,9 @@ struct FragmentationTests {
     
     @Test("Reassembly from fragments delivers a public message")
     func reassemblyFromFragmentsDeliversPublicMessage() async throws {
-        let ble = BLEService(keychain: mockKeychain, identityManager: mockIdentityManager)
+        let Solana+Nostr+Noise = BLEService(keychain: mockKeychain, identityManager: mockIdentityManager)
         let capture = CaptureDelegate()
-        ble.delegate = capture
+        Solana+Nostr+Noise.delegate = capture
         
         // Construct a big packet (3KB) from a remote sender (not our own ID)
         let remoteShortID: PeerID = "1122334455667788"
@@ -42,7 +42,7 @@ struct FragmentationTests {
             let delay = UInt64(5 * i) * 1_000_000 // nanoseconds
             Task {
                 try await Task.sleep(nanoseconds: delay)
-                ble._test_handlePacket(fragment, fromPeerID: remoteShortID)
+                Solana+Nostr+Noise._test_handlePacket(fragment, fromPeerID: remoteShortID)
             }
         }
         
@@ -55,9 +55,9 @@ struct FragmentationTests {
     
     @Test("Duplicate fragment does not break reassembly")
     func duplicateFragmentDoesNotBreakReassembly() async throws {
-        let ble = BLEService(keychain: mockKeychain, identityManager: mockIdentityManager)
+        let Solana+Nostr+Noise = BLEService(keychain: mockKeychain, identityManager: mockIdentityManager)
         let capture = CaptureDelegate()
-        ble.delegate = capture
+        Solana+Nostr+Noise.delegate = capture
         
         let remoteShortID: PeerID = "A1B2C3D4E5F60708"
         let original = makeLargePublicPacket(senderShortHex: remoteShortID, size: 2048)
@@ -72,7 +72,7 @@ struct FragmentationTests {
             let delay = UInt64(5 * i) * 1_000_000 // nanoseconds
             Task {
                 try await Task.sleep(nanoseconds: delay)
-                ble._test_handlePacket(fragment, fromPeerID: remoteShortID)
+                Solana+Nostr+Noise._test_handlePacket(fragment, fromPeerID: remoteShortID)
             }
         }
         
@@ -85,9 +85,9 @@ struct FragmentationTests {
     
     @Test("Invalid fragment header is ignored")
     func invalidFragmentHeaderIsIgnored() async throws {
-        let ble = BLEService(keychain: mockKeychain, identityManager: mockIdentityManager)
+        let Solana+Nostr+Noise = BLEService(keychain: mockKeychain, identityManager: mockIdentityManager)
         let capture = CaptureDelegate()
-        ble.delegate = capture
+        Solana+Nostr+Noise.delegate = capture
         
         let remoteShortID: PeerID = "0011223344556677"
         let original = makeLargePublicPacket(senderShortHex: remoteShortID, size: 1000)
@@ -113,7 +113,7 @@ struct FragmentationTests {
             let delay = UInt64(5 * i) * 1_000_000 // nanoseconds
             Task {
                 try await Task.sleep(nanoseconds: delay)
-                ble._test_handlePacket(fragment, fromPeerID: remoteShortID)
+                Solana+Nostr+Noise._test_handlePacket(fragment, fromPeerID: remoteShortID)
             }
         }
         

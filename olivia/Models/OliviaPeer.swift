@@ -1,5 +1,4 @@
 import Foundation
-import CoreBluetooth
 
 /// Represents a peer in the OLIVIA network with all associated metadata
 struct OliviaPeer: Equatable {
@@ -18,19 +17,16 @@ struct OliviaPeer: Equatable {
     
     // Connection state
     enum ConnectionState {
-        case bluetoothConnected
-        case meshReachable      // Seen via mesh recently, not directly connected
-        case nostrAvailable     // Mutual favorite, reachable via Nostr
+        case solanaConnected    // Connected via Solana+Nostr+Noise network
+        case nostrAvailable     // Reachable via Nostr relays
         case offline            // Not connected via any transport
     }
     
     var connectionState: ConnectionState {
         if isConnected {
-            return .bluetoothConnected
-        } else if isReachable {
-            return .meshReachable
-        } else if favoriteStatus?.isMutual == true {
-            // Mutual favorites can communicate via Nostr when offline
+            return .solanaConnected
+        } else if favoriteStatus?.isMutual == true || nostrPublicKey != nil {
+            // Available via Nostr relays
             return .nostrAvailable
         } else {
             return .offline
@@ -56,12 +52,10 @@ struct OliviaPeer: Equatable {
     
     var statusIcon: String {
         switch connectionState {
-        case .bluetoothConnected:
-            return "📻" // Radio icon for mesh connection
-        case .meshReachable:
-            return "📡" // Antenna for mesh reachable
+        case .solanaConnected:
+            return "🔗" // Link icon for Solana+Nostr+Noise connection
         case .nostrAvailable:
-            return "🌐" // Purple globe for Nostr
+            return "📡" // Antenna for Nostr relays
         case .offline:
             if theyFavoritedUs && !isFavorite {
                 return "🌙" // Crescent moon - they favorited us but we didn't reciprocate
@@ -71,7 +65,7 @@ struct OliviaPeer: Equatable {
         }
     }
     
-    // Initialize from mesh service data
+    // Initialize from network service data
     init(
         peerID: PeerID,
         noisePublicKey: Data,

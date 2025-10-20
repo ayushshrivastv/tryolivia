@@ -19,7 +19,7 @@ final class IntegrationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         // Use the in-memory test bus with autoFlood enabled to simulate
-        // broadcast propagation across a larger mesh. Integration-only.
+        // broadcast propagation across a larger network. Integration-only.
         MockBLEService.resetTestBus()
         MockBLEService.autoFloodEnabled = true
         mockKeychain = MockKeychain()
@@ -43,7 +43,7 @@ final class IntegrationTests: XCTestCase {
     // MARK: - Multi-Peer Scenarios
     
     func testFullMeshCommunication() {
-        // Create full mesh - everyone connected to everyone
+        // Create full network - everyone connected to everyone
         connectFullMesh()
         
         let expectation = XCTestExpectation(description: "All nodes communicate")

@@ -28,7 +28,7 @@ final class LocationChannelManager: NSObject, CLLocationManagerDelegate, Observa
     // Published state for UI bindings
     @Published private(set) var permissionState: PermissionState = .notDetermined
     @Published private(set) var availableChannels: [GeohashChannel] = []
-    @Published private(set) var selectedChannel: ChannelID = .mesh
+    @Published private(set) var selectedChannel: ChannelID = .network
     // True when the current location channel was selected via manual teleport
     @Published var teleported: Bool = false
     @Published private(set) var locationNames: [GeohashChannelLevel: String] = [:]
@@ -134,7 +134,7 @@ final class LocationChannelManager: NSObject, CLLocationManagerDelegate, Observa
             }
             // Update teleported flag based on persisted state for immediate UI behavior
             switch channel {
-            case .mesh:
+            case .network:
                 self.teleported = false
             case .location(let ch):
                 // If this geohash is in our current regional set, do NOT mark teleported.
@@ -225,7 +225,7 @@ final class LocationChannelManager: NSObject, CLLocationManagerDelegate, Observa
             self.availableChannels = result
             // Recompute teleported status based on whether the selected geohash is in our regional set
             switch self.selectedChannel {
-            case .mesh:
+            case .network:
                 self.teleported = false
             case .location(let ch):
                 // Membership check using freshly computed regional channels; avoids precision/rename drift

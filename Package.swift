@@ -18,15 +18,17 @@ let package = Package(
     dependencies:[
         .package(path: "localPackages/Tor"),
         .package(path: "localPackages/OliviaLogger"),
-        .package(url: "https://github.com/21-DOT-DEV/swift-secp256k1", exact: "0.21.1")
+        .package(url: "https://github.com/p2p-org/solana+Nostr+Noise-swift", from: "5.0.0")
+        // Note: Magic Block SDK will be added when officially available
     ],
     targets: [
         .executableTarget(
             name: "olivia",
             dependencies: [
-                .product(name: "P256K", package: "swift-secp256k1"),
                 .product(name: "OliviaLogger", package: "OliviaLogger"),
-                .product(name: "Tor", package: "Tor")
+                .product(name: "Tor", package: "Tor"),
+                .product(name: "SolanaSwift", package: "solana+Nostr+Noise-swift")
+                // Note: Bolt SDK will be added when available
             ],
             path: "olivia",
             exclude: [

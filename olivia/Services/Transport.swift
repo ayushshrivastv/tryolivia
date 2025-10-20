@@ -3,6 +3,12 @@ import Combine
 
 /// Abstract transport interface used by ChatViewModel and services.
 /// BLEService implements this protocol; a future Nostr transport can too.
+
+enum TransportType {
+    case solana
+    case nostr
+    case hybrid
+}
 struct TransportPeerSnapshot: Equatable, Hashable {
     let peerID: PeerID
     let nickname: String
@@ -65,4 +71,4 @@ protocol TransportPeerEventsDelegate: AnyObject {
     @MainActor func didUpdatePeerSnapshots(_ peers: [TransportPeerSnapshot])
 }
 
-extension BLEService: Transport {}
+// BLEService removed - using BLEServiceStub for Solana+Nostr+Noise+Magic Block architecture

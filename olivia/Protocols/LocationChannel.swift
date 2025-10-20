@@ -94,16 +94,16 @@ struct GeohashChannel: Codable, Equatable, Hashable, Identifiable {
     }
 }
 
-/// Identifier for current public chat channel (mesh or a location geohash).
+/// Identifier for current public chat channel (network or a location geohash).
 enum ChannelID: Equatable, Codable {
-    case mesh
+    case network
     case location(GeohashChannel)
 
     /// Human readable name for UI.
     var displayName: String {
         switch self {
-        case .mesh:
-            return "Mesh"
+        case .network:
+            return "network"
         case .location(let ch):
             return ch.displayName
         }
@@ -112,7 +112,7 @@ enum ChannelID: Equatable, Codable {
     /// Nostr tag value for scoping (geohash), if applicable.
     var nostrGeohashTag: String? {
         switch self {
-        case .mesh: return nil
+        case .network: return nil
         case .location(let ch): return ch.geohash
         }
     }

@@ -9,9 +9,9 @@
 import Foundation
 
 /// The core packet structure for all OLIVIA protocol messages.
-/// Encapsulates all data needed for routing through the mesh network,
+/// Encapsulates all data needed for routing through the Nostr relay network with Noise encryption,
 /// including TTL for hop limiting and optional encryption.
-/// - Note: Packets larger than BLE MTU (512 bytes) are automatically fragmented
+/// - Note: Packets larger than Solana+Nostr+Noise transaction size (512 bytes) are automatically fragmented
 struct OliviaPacket: Codable {
     let version: UInt8
     let type: UInt8

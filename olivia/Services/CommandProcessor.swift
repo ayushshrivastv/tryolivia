@@ -39,7 +39,7 @@ final class CommandProcessor {
         // Geohash context: disable favoriting in public geohash or GeoDM
         let inGeoPublic: Bool = {
             switch LocationChannelManager.shared.selectedChannel {
-            case .mesh: return false
+            case .network: return false
             case .location: return true
             }
         }()
@@ -61,10 +61,10 @@ final class CommandProcessor {
         case "/unblock":
             return handleUnblock(args)
         case "/fav":
-            if inGeoPublic || inGeoDM { return .error(message: "favorites are only for mesh peers in #mesh") }
+            if inGeoPublic || inGeoDM { return .error(message: "favorites are only for network peers in #network") }
             return handleFavorite(args, add: true)
         case "/unfav":
-            if inGeoPublic || inGeoDM { return .error(message: "favorites are only for mesh peers in #mesh") }
+            if inGeoPublic || inGeoDM { return .error(message: "favorites are only for network peers in #network") }
             return handleFavorite(args, add: false)
         //
         case "/help", "/h":
@@ -100,7 +100,7 @@ final class CommandProcessor {
     }
     
     private func handleWho() -> CommandResult {
-        // Show geohash participants when in a geohash channel; otherwise mesh peers
+        // Show geohash participants when in a geohash channel; otherwise network peers
         switch LocationChannelManager.shared.selectedChannel {
         case .location(let ch):
             // Geohash context: show visible geohash participants (exclude self)
@@ -113,8 +113,8 @@ final class CommandProcessor {
             let names = people.map { $0.displayName }
             if names.isEmpty { return .success(message: "no one else is online right now") }
             return .success(message: "online: " + names.sorted().joined(separator: ", "))
-        case .mesh:
-            // Mesh context: show connected peer nicknames
+        case .network:
+            // network context: show connected peer nicknames
             guard let peers = meshService?.getPeerNicknames(), !peers.isEmpty else {
                 return .success(message: "no one else is online right now")
             }
@@ -166,7 +166,7 @@ final class CommandProcessor {
                 chatViewModel?.addLocalPrivateSystemMessage(localText, to: targetPeerID)
             }
         } else {
-            // In public chat: send to active public channel (mesh or geohash)
+            // In public chat: send to active public channel (network or geohash)
             chatViewModel?.sendPublicRaw(emoteContent)
             let publicEcho = "\(emoji) \(myNickname) \(action) \(nickname)\(suffix)"
             chatViewModel?.addPublicSystemMessage(publicEcho)
@@ -179,7 +179,7 @@ final class CommandProcessor {
         let targetName = args.trimmingCharacters(in: .whitespaces)
         
         if targetName.isEmpty {
-            // List blocked users (mesh) and geohash (Nostr) blocks
+            // List blocked users (network) and geohash (Nostr) blocks
             let meshBlocked = chatViewModel?.blockedUsers ?? []
             var blockedNicknames: [String] = []
             if let peers = meshService?.getPeerNicknames() {
@@ -219,7 +219,7 @@ final class CommandProcessor {
             if identityManager.isBlocked(fingerprint: fingerprint) {
                 return .success(message: "\(nickname) is already blocked")
             }
-            // Block the user (mesh/noise identity)
+            // Block the user (network/noise identity)
             if var identity = identityManager.getSocialIdentity(for: fingerprint) {
                 identity.isBlocked = true
                 identity.isFavorite = false
@@ -238,7 +238,7 @@ final class CommandProcessor {
             }
             return .success(message: "blocked \(nickname). you will no longer receive messages from them")
         }
-        // Mesh lookup failed; try geohash (Nostr) participant by display name
+        // network lookup failed; try geohash (Nostr) participant by display name
         if let pub = chatViewModel?.nostrPubkeyForDisplayName(nickname) {
             if identityManager.isNostrBlocked(pubkeyHexLowercased: pub) {
                 return .success(message: "\(nickname) is already blocked")

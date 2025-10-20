@@ -298,7 +298,7 @@ struct PublicChatE2ETests {
     // MARK: - Network Topology Tests
     
     @Test func meshTopologyBroadcast() async {
-        // Create mesh: Everyone connected to everyone
+        // Create network: Everyone connected to everyone
         let nodes = [alice, bob, charlie, david]
         for i in 0..<nodes.count {
             for j in i+1..<nodes.count {
@@ -320,7 +320,7 @@ struct PublicChatE2ETests {
     }
     
     @Test func partialMeshRelay() async {
-        // Partial mesh: Alice -> Bob, Bob -> Charlie, Charlie -> David, David -> Alice
+        // Partial network: Alice -> Bob, Bob -> Charlie, Charlie -> David, David -> Alice
         alice.simulateConnection(with: bob)
         bob.simulateConnection(with: charlie)
         charlie.simulateConnection(with: david)

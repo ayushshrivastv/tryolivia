@@ -2,7 +2,7 @@
 //  UnifiedPeerService.swift
 //  olivia
 //
-//  Unified peer state management combining mesh connectivity and favorites
+//  Unified peer state management combining network connectivity and favorites
 //  This is free and unencumbered software released into the public domain.
 //
 
@@ -11,7 +11,7 @@ import Foundation
 import Combine
 import SwiftUI
 
-/// Single source of truth for peer state, combining mesh connectivity and favorites
+/// Single source of truth for peer state, combining network connectivity and favorites
 @MainActor
 final class UnifiedPeerService: ObservableObject, TransportPeerEventsDelegate {
     
@@ -50,7 +50,7 @@ final class UnifiedPeerService: ObservableObject, TransportPeerEventsDelegate {
     // MARK: - Setup
     
     private func setupSubscriptions() {
-        // Subscribe to mesh peer updates via delegate (preferred over publishers)
+        // Subscribe to network peer updates via delegate (preferred over publishers)
         meshService.peerEventsDelegate = self
         
         // Also listen for favorite change notifications
@@ -72,7 +72,7 @@ final class UnifiedPeerService: ObservableObject, TransportPeerEventsDelegate {
     private func updatePeers() {
         let meshPeers = meshService.currentPeerSnapshots()
         // If we have no direct links at all, peers should not be marked reachable
-        // "Reachable" means mesh-attached via at least one live link.
+        // "Reachable" means network-attached via at least one live link.
         let hasAnyConnected = meshPeers.contains { $0.isConnected }
         let favorites = favoritesService.favorites
         
@@ -80,7 +80,7 @@ final class UnifiedPeerService: ObservableObject, TransportPeerEventsDelegate {
         var connected: Set<PeerID> = []
         var addedPeerIDs: Set<PeerID> = []
         
-        // Phase 1: Add all mesh peers (connected and reachable)
+        // Phase 1: Add all network peers (connected and reachable)
         for peerInfo in meshPeers {
             let peerID = peerInfo.peerID
             guard peerID != meshService.myPeerID else { continue }  // Never add self
@@ -178,8 +178,8 @@ final class UnifiedPeerService: ObservableObject, TransportPeerEventsDelegate {
         let fingerprint = peerInfo.noisePublicKey?.sha256Fingerprint()
         let isVerified = fingerprint.map { identityManager.isVerified(fingerprint: $0) } ?? false
         let isFav = peerInfo.noisePublicKey.flatMap { favorites[$0]?.isFavorite } ?? false
-        let retention: TimeInterval = (isVerified || isFav) ? TransportConfig.bleReachabilityRetentionVerifiedSeconds : TransportConfig.bleReachabilityRetentionUnverifiedSeconds
-        // A peer is reachable if we recently saw them AND we are attached to the mesh
+        let retention: TimeInterval = (isVerified || isFav) ? TransportConfig.peerReachabilityRetentionVerifiedSeconds : TransportConfig.peerReachabilityRetentionUnverifiedSeconds
+        // A peer is reachable if we recently saw them AND we are attached to the network
         let withinRetention = now.timeIntervalSince(peerInfo.lastSeen) <= retention
         let isReachable = peerInfo.isConnected ? true : (withinRetention && meshAttached)
 
@@ -267,10 +267,10 @@ final class UnifiedPeerService: ObservableObject, TransportPeerEventsDelegate {
         SecureLogger.debug("🔍 Toggle favorite - peer.nickname: '\(peer.nickname)', peer.displayName: '\(peer.displayName)', peerID: \(peerID)", category: .session)
         
         if actualNickname.isEmpty {
-            // Try to get from mesh service's current peer list
+            // Try to get from network service's current peer list
             if let meshPeerNickname = meshService.peerNickname(peerID: peerID) {
                 actualNickname = meshPeerNickname
-                SecureLogger.debug("🔍 Got nickname from mesh service: '\(actualNickname)'", category: .session)
+                SecureLogger.debug("🔍 Got nickname from network service: '\(actualNickname)'", category: .session)
             }
         }
         
@@ -299,11 +299,11 @@ final class UnifiedPeerService: ObservableObject, TransportPeerEventsDelegate {
         // Log the final nickname being saved
         SecureLogger.debug("⭐️ Toggled favorite for '\(finalNickname)' (peerID: \(peerID), was: \(wasFavorite), now: \(!wasFavorite))", category: .session)
         
-        // Send favorite notification to the peer via router (mesh or Nostr)
+        // Send favorite notification to the peer via router (network or Nostr)
         if let router = messageRouter {
             router.sendFavoriteNotification(to: peerID, isFavorite: !wasFavorite)
         } else {
-            // Fallback to mesh-only if router not yet wired
+            // Fallback to network-only if router not yet wired
             meshService.sendFavoriteNotification(to: peerID, isFavorite: !wasFavorite)
         }
         
@@ -322,7 +322,7 @@ final class UnifiedPeerService: ObservableObject, TransportPeerEventsDelegate {
             return cached
         }
         
-        // Try to get from mesh service
+        // Try to get from network service
         if let fingerprint = meshService.getFingerprint(for: peerID) {
             fingerprintCache[peerID] = fingerprint
             return fingerprint

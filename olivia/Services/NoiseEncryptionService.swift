@@ -247,7 +247,7 @@ final class NoiseEncryptionService {
         self.signingPublicKey = signingKey.publicKey
         
         // Initialize session manager
-        self.sessionManager = NoiseSessionManager(localStaticKey: staticIdentityKey, keychain: keychain)
+        self.sessionManager = NoiseSessionManager(localStaticKey: staticIdentityKey.rawRepresentation, keychain: keychain)
         
         // Set up session callbacks
         sessionManager.onSessionEstablished = { [weak self] peerID, remoteStaticKey in

@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>olivia</string>
+	<string>OLIVIA DAO</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -21,9 +21,20 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleURLName</key>
+			<string>OLIVIA DAO Protocol</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>olivia</string>
+				<string>olivia-dao</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Solana Wallet Connect</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>solana</string>
 			</array>
 		</dict>
 	</array>
@@ -31,18 +42,12 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>olivia uses Bluetooth to create a secure mesh network for chatting with nearby users.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>olivia uses Bluetooth to discover and connect with other olivia users nearby.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>olivia uses the camera to scan QR codes to verify peers.</string>
+	<string>OLIVIA DAO uses the camera to scan QR codes for secure peer verification and wallet connections.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>olivia uses your approximate location to compute local geohash channels for optional public chats. Exact GPS is never shared.</string>
+	<string>OLIVIA DAO uses your approximate location to discover local governance channels and relay nodes. Exact GPS coordinates are never shared or stored.</string>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>bluetooth-central</string>
-		<string>bluetooth-peripheral</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -52,5 +57,24 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>solana.com</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+		</dict>
+	</dict>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.social-networking</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2025 OLIVIA DAO. Decentralized governance communication system.</string>
 </dict>
 </plist>

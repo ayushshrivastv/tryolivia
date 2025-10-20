@@ -1,13 +1,13 @@
 import Foundation
 
-/// Centralized knobs for transport- and UI-related limits.
-/// Keep values aligned with existing behavior when replacing magic numbers.
+/// Centralized configuration for Solana+Nostr+Noise+Magic Block architecture
+/// Legacy Solana+Nostr+Noise configuration removed - now using decentralized transport
 enum TransportConfig {
-    // BLE / Protocol
-    static let bleDefaultFragmentSize: Int = 469            // ~512 MTU minus protocol overhead
-    static let messageTTLDefault: UInt8 = 7                 // Default TTL for mesh flooding
-    static let bleMaxInFlightAssemblies: Int = 128          // Cap concurrent fragment assemblies
-    static let bleHighDegreeThreshold: Int = 6              // For adaptive TTL/probabilistic relays
+    // Solana+Nostr+Noise Network / Protocol
+    static let solanaDefaultFragmentSize: Int = 1232       // Solana+Nostr+Noise transaction size limit
+    static let messageTTLDefault: UInt8 = 7                // Default TTL for message routing
+    static let maxConcurrentMessages: Int = 128            // Cap concurrent message processing
+    static let nostrRelayThreshold: Int = 3                // Minimum relays for redundancy
 
     // UI / Storage Caps
     static let privateChatCap: Int = 1337
@@ -19,18 +19,18 @@ enum TransportConfig {
     static let networkResetGraceSeconds: TimeInterval = 600 // 10 minutes
     static let basePublicFlushInterval: TimeInterval = 0.08  // ~12.5 fps batching
 
-    // BLE duty/announce/connect
-    static let bleConnectRateLimitInterval: TimeInterval = 0.5
-    static let bleMaxCentralLinks: Int = 6
-    static let bleDutyOnDuration: TimeInterval = 5.0
-    static let bleDutyOffDuration: TimeInterval = 10.0
-    static let bleAnnounceMinInterval: TimeInterval = 1.0
+    // Solana+Nostr+Noise Network Configuration
+    static let solanaConnectRateLimitInterval: TimeInterval = 0.5
+    static let solanaMaxConcurrentConnections: Int = 6
+    static let solanaTransactionTimeout: TimeInterval = 30.0
+    static let magicBlockValidatorCount: Int = 4
+    static let nostrRelayMinInterval: TimeInterval = 1.0
 
-    // BLE discovery/quality thresholds
-    static let bleDynamicRSSIThresholdDefault: Int = -90
-    static let bleConnectionCandidatesMax: Int = 100
-    static let blePendingWriteBufferCapBytes: Int = 1_000_000
-    static let blePendingNotificationsCapCount: Int = 20
+    // Network Quality Thresholds
+    static let solanaRPCTimeoutDefault: TimeInterval = 10.0
+    static let nostrRelayConnectionMax: Int = 10
+    static let messagePendingBufferCapBytes: Int = 1_000_000
+    static let nostrPendingNotificationsCapCount: Int = 20
 
     // Nostr
     static let nostrReadAckInterval: TimeInterval = 0.35 // ~3 per second
@@ -63,42 +63,41 @@ enum TransportConfig {
     static let uiAnimationSidebarSeconds: TimeInterval = 0.25
     static let uiRecentCutoffFiveMinutesSeconds: TimeInterval = 5 * 60
 
-    // BLE maintenance & thresholds
-    static let bleMaintenanceInterval: TimeInterval = 5.0
-    static let bleMaintenanceLeewaySeconds: Int = 1
-    static let bleIsolationRelaxThresholdSeconds: TimeInterval = 60
-    static let bleRecentTimeoutWindowSeconds: TimeInterval = 60
-    static let bleRecentTimeoutCountThreshold: Int = 3
-    static let bleRSSIIsolatedBase: Int = -90
-    static let bleRSSIIsolatedRelaxed: Int = -92
-    static let bleRSSIConnectedThreshold: Int = -85
-    static let bleRSSIHighTimeoutThreshold: Int = -80
-    // How long without seeing traffic before we sanity-check the direct link
-    // Lowered to make connected→reachable icon changes react faster when walking out of range
-    static let blePeerInactivityTimeoutSeconds: TimeInterval = 8.0
-    // How long to retain a peer as "reachable" (not directly connected) since lastSeen
-    static let bleReachabilityRetentionVerifiedSeconds: TimeInterval = 21.0    // 21s for verified/favorites
-    static let bleReachabilityRetentionUnverifiedSeconds: TimeInterval = 21.0  // 21s for unknown/unverified
-    static let bleFragmentLifetimeSeconds: TimeInterval = 30.0
-    static let bleIngressRecordLifetimeSeconds: TimeInterval = 3.0
-    static let bleConnectTimeoutBackoffWindowSeconds: TimeInterval = 120.0
-    static let bleRecentPacketWindowSeconds: TimeInterval = 30.0
-    static let bleRecentPacketWindowMaxCount: Int = 100
-    // Keep scanning fully ON when we saw traffic very recently
-    static let bleRecentTrafficForceScanSeconds: TimeInterval = 10.0
-    static let bleThreadSleepWriteShortDelaySeconds: TimeInterval = 0.05
-    static let bleExpectedWritePerFragmentMs: Int = 8
-    static let bleExpectedWriteMaxMs: Int = 2000
-    // Faster fragment pacing; use slightly tighter spacing for directed trains
-    static let bleFragmentSpacingMs: Int = 5
-    static let bleFragmentSpacingDirectedMs: Int = 4
-    static let bleAnnounceIntervalSeconds: TimeInterval = 4.0
-    static let bleDutyOnDurationDense: TimeInterval = 3.0
-    static let bleDutyOffDurationDense: TimeInterval = 15.0
-    static let bleConnectedAnnounceBaseSecondsDense: TimeInterval = 30.0
-    static let bleConnectedAnnounceBaseSecondsSparse: TimeInterval = 15.0
-    static let bleConnectedAnnounceJitterDense: TimeInterval = 8.0
-    static let bleConnectedAnnounceJitterSparse: TimeInterval = 4.0
+    // Network Maintenance & Thresholds
+    static let networkMaintenanceInterval: TimeInterval = 5.0
+    static let networkMaintenanceLeewaySeconds: Int = 1
+    static let solanaConnectionTimeoutSeconds: TimeInterval = 60
+    static let nostrRelayTimeoutWindowSeconds: TimeInterval = 60
+    static let nostrRelayTimeoutCountThreshold: Int = 3
+    static let solanaRPCLatencyThresholdMs: Int = 1000
+    static let nostrRelayLatencyThresholdMs: Int = 2000
+    static let magicBlockLatencyThresholdMs: Int = 500
+    static let networkQualityCheckIntervalSeconds: TimeInterval = 30.0
+    // How long without seeing activity before checking connection health
+    static let peerInactivityTimeoutSeconds: TimeInterval = 8.0
+    // How long to retain a peer as "reachable" since last activity
+    static let peerReachabilityRetentionVerifiedSeconds: TimeInterval = 21.0    // 21s for verified/favorites
+    static let peerReachabilityRetentionUnverifiedSeconds: TimeInterval = 21.0  // 21s for unknown/unverified
+    static let messageFragmentLifetimeSeconds: TimeInterval = 30.0
+    static let messageIngressRecordLifetimeSeconds: TimeInterval = 3.0
+    static let solanaConnectionBackoffWindowSeconds: TimeInterval = 120.0
+    static let recentMessageWindowSeconds: TimeInterval = 30.0
+    static let recentMessageWindowMaxCount: Int = 100
+    // Keep network monitoring active when we saw traffic recently
+    static let recentTrafficForceMonitorSeconds: TimeInterval = 10.0
+    static let networkThreadSleepDelaySeconds: TimeInterval = 0.05
+    static let expectedTransactionTimeMs: Int = 1000
+    static let maxTransactionTimeMs: Int = 30000
+    // Message pacing for Solana+Nostr+Noise transactions
+    static let solanaTransactionSpacingMs: Int = 100
+    static let nostrMessageSpacingMs: Int = 50
+    static let networkAnnounceIntervalSeconds: TimeInterval = 4.0
+    static let solanaActiveMonitoringDuration: TimeInterval = 3.0
+    static let solanaIdleMonitoringDuration: TimeInterval = 15.0
+    static let solanaHeartbeatIntervalDense: TimeInterval = 30.0
+    static let solanaHeartbeatIntervalSparse: TimeInterval = 15.0
+    static let networkJitterDense: TimeInterval = 8.0
+    static let networkJitterSparse: TimeInterval = 4.0
 
     // Location
     static let locationDistanceFilterMeters: Double = 1000
@@ -142,25 +141,24 @@ enum TransportConfig {
     // Geo relay directory
     static let geoRelayFetchIntervalSeconds: TimeInterval = 60 * 60 * 24
 
-    // BLE operational delays
-    static let bleInitialAnnounceDelaySeconds: TimeInterval = 0.6
-    static let bleConnectTimeoutSeconds: TimeInterval = 8.0
-    static let bleRestartScanDelaySeconds: TimeInterval = 0.1
-    static let blePostSubscribeAnnounceDelaySeconds: TimeInterval = 0.05
-    static let blePostAnnounceDelaySeconds: TimeInterval = 0.4
-    static let bleForceAnnounceMinIntervalSeconds: TimeInterval = 0.15
+    // Network Operational Delays
+    static let solanaInitialConnectDelaySeconds: TimeInterval = 0.6
+    static let nostrRelayReconnectDelaySeconds: TimeInterval = 0.1
+    static let magicBlockSubscribeDelaySeconds: TimeInterval = 0.05
+    static let networkAnnounceDelaySeconds: TimeInterval = 0.4
+    static let networkForceAnnounceMinIntervalSeconds: TimeInterval = 0.15
 
-    // Store-and-forward for directed packets at relays
-    static let bleDirectedSpoolWindowSeconds: TimeInterval = 15.0
+    // Store-and-forward for directed messages via relays
+    static let messageSpoolWindowSeconds: TimeInterval = 15.0
 
     // Log/UI debounce windows
     // Shorter debounce so UI reacts faster while still suppressing duplicate callbacks
-    static let bleDisconnectNotifyDebounceSeconds: TimeInterval = 0.9
-    static let bleReconnectLogDebounceSeconds: TimeInterval = 2.0
+    static let networkDisconnectNotifyDebounceSeconds: TimeInterval = 0.9
+    static let networkReconnectLogDebounceSeconds: TimeInterval = 2.0
 
-    // Weak-link cooldown after connection timeouts
-    static let bleWeakLinkCooldownSeconds: TimeInterval = 30.0
-    static let bleWeakLinkRSSICutoff: Int = -90
+    // Poor connection cooldown after timeouts
+    static let networkWeakConnectionCooldownSeconds: TimeInterval = 30.0
+    static let networkLatencyThresholdMs: Int = 2000
 
     // Content hashing / formatting
     static let contentKeyPrefixLength: Int = 256

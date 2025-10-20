@@ -54,12 +54,12 @@ struct MeshPeerList: View {
                                 .font(.oliviaSystem(size: 10))
                                 .foregroundColor(baseColor)
                         } else if peer.isConnected {
-                            // Mesh-connected peer: radio icon
+                            // network-connected peer: radio icon
                             Image(systemName: "antenna.radiowaves.left.and.right")
                                 .font(.oliviaSystem(size: 10))
                                 .foregroundColor(baseColor)
                         } else if peer.isReachable {
-                            // Mesh-reachable (relayed): point.3 icon
+                            // network-reachable (relayed): point.3 icon
                             Image(systemName: "point.3.filled.connected.trianglepath.dotted")
                                 .font(.oliviaSystem(size: 10))
                                 .foregroundColor(baseColor)

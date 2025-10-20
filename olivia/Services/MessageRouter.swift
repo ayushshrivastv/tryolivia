@@ -1,17 +1,17 @@
 import OliviaLogger
 import Foundation
 
-/// Routes messages between BLE and Nostr transports
+/// Routes messages via Solana+Nostr+Noise architecture (Solana+Nostr+Noise network disabled)
 @MainActor
 final class MessageRouter {
-    private let mesh: Transport
+    private let solana: SolanaTransport
     private let nostr: NostrTransport
     private var outbox: [PeerID: [(content: String, nickname: String, messageID: String)]] = [:] // peerID -> queued messages
 
-    init(mesh: Transport, nostr: NostrTransport) {
-        self.mesh = mesh
+    init(solana: SolanaTransport, nostr: NostrTransport) {
+        self.solana = solana
         self.nostr = nostr
-        self.nostr.senderPeerID = mesh.myPeerID
+        self.nostr.senderPeerID = solana.myPeerID
 
         // Observe favorites changes to learn Nostr mapping and flush queued messages
         NotificationCenter.default.addObserver(
@@ -38,27 +38,27 @@ final class MessageRouter {
     }
 
     func sendPrivate(_ content: String, to peerID: PeerID, recipientNickname: String, messageID: String) {
-        let reachableMesh = mesh.isPeerReachable(peerID)
-        if reachableMesh {
-            SecureLogger.debug("Routing PM via mesh (reachable) to \(peerID.id.prefix(8))… id=\(messageID.prefix(8))…", category: .session)
-            // BLEService will initiate a handshake if needed and queue the message
-            mesh.sendPrivateMessage(content, to: peerID, recipientNickname: recipientNickname, messageID: messageID)
+        // Priority: Solana+Nostr+Noise network first, then Nostr relays
+        let reachableSolana = solana.isPeerReachable(peerID)
+        if reachableSolana {
+            SecureLogger.debug("Routing PM via Solana+Nostr+Noise to \(peerID.id.prefix(8))… id=\(messageID.prefix(8))…", category: .session)
+            solana.sendPrivateMessage(content, to: peerID, recipientNickname: recipientNickname, messageID: messageID)
         } else if canSendViaNostr(peerID: peerID) {
             SecureLogger.debug("Routing PM via Nostr to \(peerID.id.prefix(8))… id=\(messageID.prefix(8))…", category: .session)
             nostr.sendPrivateMessage(content, to: peerID, recipientNickname: recipientNickname, messageID: messageID)
         } else {
-            // Queue for later (when mesh connects or Nostr mapping appears)
+            // Queue for later (when Solana+Nostr+Noise connects or Nostr mapping appears)
             if outbox[peerID] == nil { outbox[peerID] = [] }
             outbox[peerID]?.append((content, recipientNickname, messageID))
-            SecureLogger.debug("Queued PM for \(peerID.id.prefix(8))… (no mesh, no Nostr mapping) id=\(messageID.prefix(8))…", category: .session)
+            SecureLogger.debug("Queued PM for \(peerID.id.prefix(8))… (no Solana+Nostr+Noise, no Nostr mapping) id=\(messageID.prefix(8))…", category: .session)
         }
     }
 
     func sendReadReceipt(_ receipt: ReadReceipt, to peerID: PeerID) {
-        // Prefer mesh for reachable peers; BLE will queue if handshake is needed
-        if mesh.isPeerReachable(peerID) {
-            SecureLogger.debug("Routing READ ack via mesh (reachable) to \(peerID.id.prefix(8))… id=\(receipt.originalMessageID.prefix(8))…", category: .session)
-            mesh.sendReadReceipt(receipt, to: peerID)
+        // Prefer Solana+Nostr+Noise for reachable peers, fallback to Nostr
+        if solana.isPeerReachable(peerID) {
+            SecureLogger.debug("Routing READ ack via Solana+Nostr+Noise to \(peerID.id.prefix(8))… id=\(receipt.originalMessageID.prefix(8))…", category: .session)
+            solana.sendReadReceipt(receipt, to: peerID)
         } else {
             SecureLogger.debug("Routing READ ack via Nostr to \(peerID.id.prefix(8))… id=\(receipt.originalMessageID.prefix(8))…", category: .session)
             nostr.sendReadReceipt(receipt, to: peerID)
@@ -66,18 +66,18 @@ final class MessageRouter {
     }
 
     func sendDeliveryAck(_ messageID: String, to peerID: PeerID) {
-        if mesh.isPeerReachable(peerID) {
-            SecureLogger.debug("Routing DELIVERED ack via mesh (reachable) to \(peerID.id.prefix(8))… id=\(messageID.prefix(8))…", category: .session)
-            mesh.sendDeliveryAck(for: messageID, to: peerID)
+        if solana.isPeerReachable(peerID) {
+            SecureLogger.debug("Routing DELIVERED ack via Solana+Nostr+Noise to \(peerID.id.prefix(8))… id=\(messageID.prefix(8))…", category: .session)
+            solana.sendDeliveryAck(for: messageID, to: peerID)
         } else {
             nostr.sendDeliveryAck(for: messageID, to: peerID)
         }
     }
 
     func sendFavoriteNotification(to peerID: PeerID, isFavorite: Bool) {
-        // Route via mesh when connected; else use Nostr
-        if mesh.isPeerConnected(peerID) {
-            mesh.sendFavoriteNotification(to: peerID, isFavorite: isFavorite)
+        // Route via Solana+Nostr+Noise when connected; else use Nostr
+        if solana.isPeerReachable(peerID) {
+            solana.sendFavoriteNotification(to: peerID, isFavorite: isFavorite)
         } else {
             nostr.sendFavoriteNotification(to: peerID, isFavorite: isFavorite)
         }
@@ -106,11 +106,11 @@ final class MessageRouter {
         guard let queued = outbox[peerID], !queued.isEmpty else { return }
         SecureLogger.debug("Flushing outbox for \(peerID.id.prefix(8))… count=\(queued.count)", category: .session)
         var remaining: [(content: String, nickname: String, messageID: String)] = []
-        // Prefer mesh if connected; else try Nostr if mapping exists
+        // Prefer Solana+Nostr+Noise if connected; else try Nostr if mapping exists
         for (content, nickname, messageID) in queued {
-            if mesh.isPeerReachable(peerID) {
-                SecureLogger.debug("Outbox -> mesh for \(peerID.id.prefix(8))… id=\(messageID.prefix(8))…", category: .session)
-                mesh.sendPrivateMessage(content, to: peerID, recipientNickname: nickname, messageID: messageID)
+            if solana.isPeerReachable(peerID) {
+                SecureLogger.debug("Outbox -> Solana+Nostr+Noise for \(peerID.id.prefix(8))… id=\(messageID.prefix(8))…", category: .session)
+                solana.sendPrivateMessage(content, to: peerID, recipientNickname: nickname, messageID: messageID)
             } else if canSendViaNostr(peerID: peerID) {
                 SecureLogger.debug("Outbox -> Nostr for \(peerID.id.prefix(8))… id=\(messageID.prefix(8))…", category: .session)
                 nostr.sendPrivateMessage(content, to: peerID, recipientNickname: nickname, messageID: messageID)

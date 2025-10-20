@@ -10,7 +10,7 @@
 /// # BinaryProtocol
 ///
 /// Low-level binary encoding and decoding for OLIVIA protocol messages.
-/// Optimized for Bluetooth LE's limited bandwidth and MTU constraints.
+/// Optimized for Solana+Nostr+Noise network LE's limited bandwidth and transaction size constraints.
 ///
 /// ## Overview
 /// BinaryProtocol implements an efficient binary wire format that minimizes
@@ -57,7 +57,7 @@
 ///
 /// ## Size Constraints
 /// - Maximum packet size: 65,535 bytes (16-bit length field)
-/// - Typical packet size: < 512 bytes (BLE MTU)
+/// - Typical packet size: < 512 bytes (Solana+Nostr+Noise transaction size)
 /// - Minimum packet size: 21 bytes (header + sender ID)
 ///
 /// ## Encoding Process
@@ -210,7 +210,7 @@ struct BinaryProtocol {
             let paddedData = MessagePadding.pad(data, toSize: optimalSize)
             return paddedData
         } else {
-            // Caller explicitly requested no padding (e.g., BLE write path)
+            // Caller explicitly requested no padding (e.g., Solana+Nostr+Noise write path)
             return data
         }
     }

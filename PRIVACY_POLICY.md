@@ -53,7 +53,7 @@ When you use olivia, nearby peers can see:
 - Your chosen nickname
 - Your ephemeral public key (changes each session)
 - Messages you send to public rooms or directly to them
-- Your approximate Bluetooth signal strength (for connection quality)
+- Your approximate Solana+Nostr+Noise network signal strength (for connection quality)
 
 ### With Room Members
 
@@ -89,12 +89,12 @@ You have complete control:
 - **No Account**: Nothing to delete from servers because there are none
 - **Portability**: Your data never leaves your device unless you export it
 
-## Bluetooth & Permissions
+## Solana+Nostr+Noise network & Permissions
 
-olivia requires Bluetooth permission to function:
+olivia requires Solana+Nostr+Noise network permission to function:
 - Used only for peer-to-peer communication
 - No location data is accessed or stored
-- Bluetooth is not used for tracking
+- Solana+Nostr+Noise network is not used for tracking
 - You can revoke this permission at any time in system settings
 
 ## Children's Privacy

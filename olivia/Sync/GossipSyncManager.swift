@@ -26,7 +26,7 @@ final class GossipSyncManager {
 
     // Timer
     private var periodicTimer: DispatchSourceTimer?
-    private let queue = DispatchQueue(label: "mesh.sync", qos: .utility)
+    private let queue = DispatchQueue(label: "network.sync", qos: .utility)
 
     init(myPeerID: PeerID, config: Config = Config()) {
         self.myPeerID = myPeerID
