@@ -2,7 +2,7 @@
 
 ## Overview
 
-OLIVIA implements the Noise Protocol Framework for end-to-end encryption, providing forward secrecy, identity hiding, and cryptographic authentication. This document details our Swift implementation and its integration with OLIVIA's decentralized mesh network.
+OLIVIA implements the Noise Protocol Framework for end-to-end encryption, providing forward secrecy, identity hiding, and cryptographic authentication. This document details our Swift implementation and its integration with OLIVIA's decentralized Nostr relay network with Noise encryption.
 
 ## The Noise Protocol Framework
 
@@ -173,7 +173,7 @@ enum NoiseError: Error {
 ### Message Batching
 - Combine small messages
 - Reduce encryption overhead
-- Optimize for BLE MTU
+- Optimize for Solana+Nostr+Noise transaction size
 
 ### Memory Management
 - Bounded session cache
