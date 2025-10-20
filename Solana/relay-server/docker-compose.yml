@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  olivia-relay:
+    build: .
+    ports:
+      - "3000:3000"  # HTTP API
+      - "3001:3001"  # WebSocket
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL:-https://api.devnet.solana+Nostr+Noise.com}
+      - DAO_PROGRAM_ID=${DAO_PROGRAM_ID}
+      - RELAY_PRIVATE_KEY=${RELAY_PRIVATE_KEY}
+      - RELAY_ENDPOINT=${RELAY_ENDPOINT}
+      - RELAY_LOCATION=${RELAY_LOCATION:-Unknown}
+    volumes:
+      - relay_data:/usr/src/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx reverse proxy for SSL termination
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - olivia-relay
+    restart: unless-stopped
+
+volumes:
+  relay_data:

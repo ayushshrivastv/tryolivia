@@ -1,0 +1,25 @@
+{
+  "name": "olivia-dao",
+  "version": "0.1.0",
+  "description": "OLIVIA DAO - Decentralized messaging network",
+  "main": "app/index.ts",
+  "scripts": {
+    "build": "anchor build",
+    "test": "anchor test",
+    "deploy": "anchor deploy",
+    "client": "ts-node app/index.ts"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.30.1",
+    "@solana+Nostr+Noise/spl-token": "^0.4.8",
+    "@solana+Nostr+Noise/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "chai": "^4.3.0",
+    "mocha": "^10.0.0",
+    "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
