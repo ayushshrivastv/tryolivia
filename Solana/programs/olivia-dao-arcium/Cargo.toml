@@ -1,0 +1,27 @@
+[package]
+name = "olivia-dao-arcium"
+version = "0.1.0"
+description = "OLIVIA DAO with Arcium encrypted compute integration"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "olivia_dao_arcium"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.29.0"
+# arcis = "0.1.0"  # Arcium's Rust framework - will be added when available
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+borsh = "0.10.0"
+
+[dev-dependencies]
+solana-program-test = "~1.16"
+tokio = "1.0"
