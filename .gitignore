@@ -122,3 +122,7 @@ ehthumbs.db
 mainnet-program-id.txt
 mainnet-token-mint.txt
 mainnet-deployment-report.md
+
+# Demo and test data files
+demo-data.json
+**/demo-data.json
