@@ -7,6 +7,7 @@ skip-lint = false
 
 [programs.devnet]
 olivia_dao = "BQcHvNqgAT7TQonNJR6zoxu7eNCy9c7mB44K9CVaUcA"
+olivia_dao_arcium = "ARCiUMoLiViADAOEncryptedComputeProgram11111"
 
 [registry]
 url = "https://api.apr.dev"
