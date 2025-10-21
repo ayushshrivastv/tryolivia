@@ -337,11 +337,12 @@ struct DAOProposal: Identifiable {
     let cancelled: Bool
 }
 
-enum ProposalType {
-    case updateMessageFee
-    case updateRelayRewards
-    case addRelayNode
-    case removeRelayNode
+enum ProposalType: UInt8, CaseIterable {
+    case updateMessageFee = 0
+    case updateRelayRewards = 1
+    case addRelayNode = 2
+    case removeRelayNode = 3
+    case treasuryAllocation = 4
 }
 
 struct CreateProposalView: View {
