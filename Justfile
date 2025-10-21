@@ -9,6 +9,7 @@ default:
     @echo "  just clean   - Clean build artifacts and restore original files"
     @echo "  just check   - Check prerequisites"
     @echo "  just deploy-solana - Deploy Solana contracts (see Solana/deploy-mainnet.sh)"
+    @echo "  just init-dao      - Initialize DAO with sample data"
     @echo ""
     @echo "Decentralized DAO messaging with blockchain governance"
 
@@ -113,3 +114,8 @@ deploy-solana:
     @echo "🚀 Deploying OLIVIA DAO to Solana..."
     @echo "This will run the dedicated Solana deployment script"
     @cd Solana && ./deploy-mainnet.sh
+
+# Initialize DAO with sample data
+init-dao:
+    @echo "🏛️ Initializing OLIVIA DAO..."
+    @cd Solana && npm run init-dao
