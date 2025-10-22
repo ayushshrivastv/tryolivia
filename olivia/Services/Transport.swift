@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 /// Abstract transport interface used by ChatViewModel and services.
-/// BLEService implements this protocol; a future Nostr transport can too.
+/// SolanaService implements this protocol; Nostr transport can too.
 
 enum TransportType {
     case solana
@@ -22,7 +22,7 @@ protocol Transport: AnyObject {
     var delegate: OliviaDelegate? { get set }
     // Peer events (preferred over publishers for UI)
     var peerEventsDelegate: TransportPeerEventsDelegate? { get set }
-    
+
     // Peer snapshots (for non-UI services)
     var peerSnapshotPublisher: AnyPublisher<[TransportPeerSnapshot], Never> { get }
     func currentPeerSnapshots() -> [TransportPeerSnapshot]
@@ -71,4 +71,3 @@ protocol TransportPeerEventsDelegate: AnyObject {
     @MainActor func didUpdatePeerSnapshots(_ peers: [TransportPeerSnapshot])
 }
 
-// BLEService removed - using BLEServiceStub for Solana+Nostr+Noise+Magic Block architecture
