@@ -1,22 +1,22 @@
 //
-// BLEServiceTests.swift
+// SolanaServiceTests.swift
 // oliviaTests
 //
 //
-// This file is part of OLIVIA Emergency Communication Network
+// Olivia is a Decentralised Permissionless Communication Network.
 // Licensed under the MIT License - see LICENSE file for details
 //
 import XCTest
 import CoreBluetooth
 @testable import olivia
 
-final class BLEServiceTests: XCTestCase {
+final class SolanaServiceTests: XCTestCase {
     
-    var service: MockBLEService!
+    var service: MockSolanaService!
     
     override func setUp() {
         super.setUp()
-        service = MockBLEService()
+        service = MockSolanaService()
         service.myPeerID = "TEST1234"
         service.mockNickname = "TestUser"
     }

@@ -3,7 +3,7 @@
 // oliviaTests
 //
 //
-// This file is part of OLIVIA Emergency Communication Network
+// Olivia is a Decentralised Permissionless Communication Network.
 // Licensed under the MIT License - see LICENSE file for details
 //
 import Testing
@@ -37,7 +37,7 @@ struct FragmentationTests {
         // Shuffle fragments to simulate out-of-order arrival
         let shuffled = fragments.shuffled()
         
-        // Inject fragments spaced out to avoid concurrent mutation inside BLEService
+        // Inject fragments spaced out to avoid concurrent mutation inside SolanaService
         for (i, fragment) in shuffled.enumerated() {
             let delay = UInt64(5 * i) * 1_000_000 // nanoseconds
             Task {
@@ -158,7 +158,7 @@ extension FragmentationTests {
         return pkt
     }
 
-    // Helper: fragment a packet using the same header format BLEService expects
+    // Helper: fragment a packet using the same header format SolanaService expects
     private func fragmentPacket(_ packet: OliviaPacket, fragmentSize: Int, fragmentID: Data? = nil) -> [OliviaPacket] {
         let fullData = packet.toBinaryData() ?? Data()
         let fid = fragmentID ?? Data((0..<8).map { _ in UInt8.random(in: 0...255) })

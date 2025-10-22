@@ -4,16 +4,16 @@ This test suite uses an in-memory networking harness to make end-to-end and inte
 
 ## In-Memory Bus
 
-- **File:** `oliviaTests/Mocks/MockBLEService.swift`
-- **Registry/Adjacency:** Global `registry` maps `peerID` to a `MockBLEService` instance; `adjacency` records simulated links between peers.
-- **Setup:** Call `MockBLEService.resetTestBus()` in `setUp()` to clear state between tests.
+- **File:** `oliviaTests/Mocks/MockSolanaService.swift`
+- **Registry/Adjacency:** Global `registry` maps `peerID` to a `MockSolanaService` instance; `adjacency` records simulated links between peers.
+- **Setup:** Call `MockSolanaService.resetTestBus()` in `setUp()` to clear state between tests.
 - **Topology:** Use `simulateConnectedPeer(_:)` and `simulateDisconnectedPeer(_:)` to add/remove links. `connectFullMesh()` helpers in tests build larger topologies.
 - **Handlers:** Tests can observe data via `messageDeliveryHandler` (decoded `OliviaMessage`) and `packetDeliveryHandler` (raw `OliviaPacket`).
 - **De‑duplication:** A thread-safe `seenMessageIDs` prevents duplicate deliveries during flooding/relays.
 
 ## Broadcast Flooding
 
-- **Flag:** `MockBLEService.autoFloodEnabled`
+- **Flag:** `MockSolanaService.autoFloodEnabled`
 - **Intent:** When `true`, public broadcasts propagate across the entire connected component (ignores TTL for reach) while still de‑duping to prevent loops.
 - **Usage:** Enabled in Integration tests (`setUp`) to simulate large-network broadcast; disabled in E2E tests to keep routing explicit and verify TTL behavior (see `PublicChatE2ETests.testZeroTTLNotRelayed`).
 
@@ -36,10 +36,10 @@ This test suite uses an in-memory networking harness to make end-to-end and inte
 ## Quick Start
 
 - Create nodes and connect them:
-  - `let svc = MockBLEService(); svc.myPeerID = "PEER1"`
+  - `let svc = MockSolanaService(); svc.myPeerID = "PEER1"`
   - `svc.simulateConnectedPeer("PEER2")`
 - Observe messages:
   - `svc.messageDeliveryHandler = { msg in /* asserts */ }`
 - Enable broadcast flooding for Integration suites only:
-  - `MockBLEService.autoFloodEnabled = true`
+  - `MockSolanaService.autoFloodEnabled = true`
 

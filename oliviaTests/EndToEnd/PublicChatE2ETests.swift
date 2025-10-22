@@ -3,7 +3,7 @@
 // oliviaTests
 //
 //
-// This file is part of OLIVIA Emergency Communication Network
+// Olivia is a Decentralised Permissionless Communication Network.
 // Licensed under the MIT License - see LICENSE file for details
 //
 import Testing
@@ -13,19 +13,19 @@ import struct Foundation.UUID
 @Suite(.serialized)
 struct PublicChatE2ETests {
     
-    private let alice: MockBLEService
-    private let bob: MockBLEService
-    private let charlie: MockBLEService
-    private let david: MockBLEService
+    private let alice: MockSolanaService
+    private let bob: MockSolanaService
+    private let charlie: MockSolanaService
+    private let david: MockSolanaService
     
     private var receivedMessages: [String: [OliviaMessage]] = [:]
     
     init() {
         // Create mock services with unique peer IDs to avoid any collision
-        alice = MockBLEService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname1)
-        bob = MockBLEService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname2)
-        charlie = MockBLEService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname3)
-        david = MockBLEService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname4)
+        alice = MockSolanaService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname1)
+        bob = MockSolanaService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname2)
+        charlie = MockSolanaService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname3)
+        david = MockSolanaService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname4)
     }
     
     // MARK: - Basic Broadcasting Tests
@@ -381,7 +381,7 @@ struct PublicChatE2ETests {
     
     // MARK: - Helper Methods
 
-    private func setupRelayHandler(_ node: MockBLEService, nextHops: [MockBLEService]) {
+    private func setupRelayHandler(_ node: MockSolanaService, nextHops: [MockSolanaService]) {
         node.packetDeliveryHandler = { packet in
             // Check if should relay
             guard packet.ttl > 1 else { return }

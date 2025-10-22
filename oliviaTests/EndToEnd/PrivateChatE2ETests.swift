@@ -3,7 +3,7 @@
 // oliviaTests
 //
 //
-// This file is part of OLIVIA Emergency Communication Network
+// Olivia is a Decentralised Permissionless Communication Network.
 // Licensed under the MIT License - see LICENSE file for details
 //
 import Testing
@@ -11,20 +11,20 @@ import CryptoKit
 import struct Foundation.UUID
 @testable import olivia
 
-// TODO: Remove once MockBLEService is refactored to fix race condition
+// TODO: Remove once MockSolanaService is refactored to fix race condition
 @Suite(.serialized)
 struct PrivateChatE2ETests {
     
-    private let alice: MockBLEService
-    private let bob: MockBLEService
-    private let charlie: MockBLEService
+    private let alice: MockSolanaService
+    private let bob: MockSolanaService
+    private let charlie: MockSolanaService
     private let mockKeychain: MockKeychain
     
     init() {
         // Create services with unique peer IDs to avoid any collision
-        alice = MockBLEService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname1)
-        bob = MockBLEService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname2)
-        charlie = MockBLEService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname3)
+        alice = MockSolanaService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname1)
+        bob = MockSolanaService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname2)
+        charlie = MockSolanaService(peerID: PeerID(str: UUID().uuidString), nickname: TestConstants.testNickname3)
         mockKeychain = MockKeychain()
     }
     

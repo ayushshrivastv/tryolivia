@@ -3,7 +3,7 @@
 // oliviaTests
 //
 //
-// This file is part of OLIVIA Emergency Communication Network
+// Olivia is a Decentralised Permissionless Communication Network.
 // Licensed under the MIT License - see LICENSE file for details
 //
 import XCTest
@@ -12,7 +12,7 @@ import CryptoKit
 
 final class IntegrationTests: XCTestCase {
     
-    var nodes: [String: MockBLEService] = [:]
+    var nodes: [String: MockSolanaService] = [:]
     var noiseManagers: [String: NoiseSessionManager] = [:]
     private var mockKeychain: MockKeychain!
     
@@ -20,8 +20,8 @@ final class IntegrationTests: XCTestCase {
         super.setUp()
         // Use the in-memory test bus with autoFlood enabled to simulate
         // broadcast propagation across a larger network. Integration-only.
-        MockBLEService.resetTestBus()
-        MockBLEService.autoFloodEnabled = true
+        MockSolanaService.resetTestBus()
+        MockSolanaService.autoFloodEnabled = true
         mockKeychain = MockKeychain()
         
         // Create a network of nodes
@@ -33,7 +33,7 @@ final class IntegrationTests: XCTestCase {
     
     override func tearDown() {
         // Disable flooding to avoid cross-test interference
-        MockBLEService.autoFloodEnabled = false
+        MockSolanaService.autoFloodEnabled = false
         nodes.removeAll()
         noiseManagers.removeAll()
         mockKeychain = nil
@@ -588,7 +588,7 @@ final class IntegrationTests: XCTestCase {
     // MARK: - Helper Methods
     
     private func createNode(_ name: String, peerID: PeerID) {
-        let node = MockBLEService()
+        let node = MockSolanaService()
         node.myPeerID = peerID
         node.mockNickname = name
         nodes[name] = node

@@ -1,9 +1,9 @@
 //
-// MockBLEService.swift
+// MockSolanaService.swift
 // oliviaTests
 //
 //
-// This file is part of OLIVIA Emergency Communication Network
+// Olivia is a Decentralised Permissionless Communication Network.
 // Licensed under the MIT License - see LICENSE file for details
 //
 import Foundation
@@ -25,11 +25,11 @@ import CoreBluetooth
 /// - `autoFloodEnabled` is disabled by default; Integration tests enable it in `setUp()` to
 ///   simulate broadcast propagation across the network. E2E tests keep it off and perform explicit
 ///   relays when needed.
-final class MockBLEService: NSObject {
+final class MockSolanaService: NSObject {
     // Enable automatic flooding for public messages in integration tests only
     static var autoFloodEnabled: Bool = false
     
-    // MARK: - Properties matching BLEService
+    // MARK: - Properties matching SolanaService
     
     weak var delegate: OliviaDelegate?
     var myPeerID: PeerID = "MOCK1234"
@@ -64,7 +64,7 @@ final class MockBLEService: NSObject {
         super.init()
     }
     
-    // MARK: - Methods matching BLEService
+    // MARK: - Methods matching SolanaService
     
     func setNickname(_ nickname: String) {
         self.myNickname = nickname
@@ -72,7 +72,7 @@ final class MockBLEService: NSObject {
     
     // MARK: - In-memory test bus (for E2E/Integration)
     /// Global per-process bus for deterministic routing in tests.
-    private static var registry: [PeerID: MockBLEService] = [:]
+    private static var registry: [PeerID: MockSolanaService] = [:]
     private static var adjacency: [PeerID: Set<PeerID>] = [:]
 
     /// Clears global bus state. Call from test `setUp()`.
@@ -83,14 +83,14 @@ final class MockBLEService: NSObject {
 
     /// Registers this instance on first use.
     private func registerIfNeeded() {
-        MockBLEService.registry[myPeerID] = self
-        if MockBLEService.adjacency[myPeerID] == nil { MockBLEService.adjacency[myPeerID] = [] }
+        MockSolanaService.registry[myPeerID] = self
+        if MockSolanaService.adjacency[myPeerID] == nil { MockSolanaService.adjacency[myPeerID] = [] }
     }
 
     /// Returns adjacent neighbors based on the current simulated topology.
-    private func neighbors() -> [MockBLEService] {
-        guard let ids = MockBLEService.adjacency[myPeerID] else { return [] }
-        return ids.compactMap { MockBLEService.registry[$0] }
+    private func neighbors() -> [MockSolanaService] {
+        guard let ids = MockSolanaService.adjacency[myPeerID] else { return [] }
+        return ids.compactMap { MockSolanaService.registry[$0] }
     }
 
     /// Adds an undirected edge between two peerIDs.
@@ -219,17 +219,17 @@ final class MockBLEService: NSObject {
             packetDeliveryHandler?(packet)
 
             // If directly connected to recipient, deliver only to them.
-            if let neighbors = MockBLEService.adjacency[myPeerID], neighbors.contains(recipientPeerID),
-               let target = MockBLEService.registry[recipientPeerID] {
+            if let neighbors = MockSolanaService.adjacency[myPeerID], neighbors.contains(recipientPeerID),
+               let target = MockSolanaService.registry[recipientPeerID] {
                 target.simulateIncomingPacket(packet)
             } else {
                 // Not directly connected: deliver to neighbors for relay; also deliver directly if target is known
-                if let target = MockBLEService.registry[recipientPeerID] {
+                if let target = MockSolanaService.registry[recipientPeerID] {
                     target.simulateIncomingPacket(packet)
                 }
-                if let neighbors = MockBLEService.adjacency[myPeerID] {
+                if let neighbors = MockSolanaService.adjacency[myPeerID] {
                     for peer in neighbors where peer != recipientPeerID {
-                        if let neighbor = MockBLEService.registry[peer] {
+                        if let neighbor = MockSolanaService.registry[peer] {
                             neighbor.simulateIncomingPacket(packet)
                         }
                     }
@@ -279,14 +279,14 @@ final class MockBLEService: NSObject {
     
     func simulateConnectedPeer(_ peerID: PeerID) {
         registerIfNeeded()
-        MockBLEService.connectPeers(myPeerID, peerID)
+        MockSolanaService.connectPeers(myPeerID, peerID)
         connectedPeers.insert(peerID)
         delegate?.didConnectToPeer(peerID)
         delegate?.didUpdatePeerList(Array(connectedPeers))
     }
     
     func simulateDisconnectedPeer(_ peerID: PeerID) {
-        MockBLEService.disconnectPeers(myPeerID, peerID)
+        MockSolanaService.disconnectPeers(myPeerID, peerID)
         connectedPeers.remove(peerID)
         delegate?.didDisconnectFromPeer(peerID)
         delegate?.didUpdatePeerList(Array(connectedPeers))
@@ -319,7 +319,7 @@ final class MockBLEService: NSObject {
                 // When enabled, propagate a public broadcast across the entire connected
                 // component regardless of the original TTL to better emulate large-network
                 // broadcast expectations. De-duplication via seenMessageIDs prevents loops.
-                if MockBLEService.autoFloodEnabled,
+                if MockSolanaService.autoFloodEnabled,
                    packet.recipientID == nil,
                    !message.isPrivate {
                     let nextTTL = packet.ttl > 0 ? packet.ttl - 1 : 0
@@ -348,18 +348,18 @@ final class MockBLEService: NSObject {
 }
 
 // Backward compatibility for older tests
-typealias MockSimplifiedBluetoothService = MockBLEService
+typealias MockSimplifiedBluetoothService = MockSolanaService
 
 // MARK: - Helpers
 
-extension MockBLEService {
+extension MockSolanaService {
     convenience init(peerID: PeerID, nickname: String) {
         self.init()
         myPeerID = peerID
         mockNickname = nickname
     }
 
-    func simulateConnection(with otherPeer: MockBLEService) {
+    func simulateConnection(with otherPeer: MockSolanaService) {
         simulateConnectedPeer(otherPeer.myPeerID)
         otherPeer.simulateConnectedPeer(myPeerID)
     }

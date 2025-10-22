@@ -3,7 +3,7 @@ import Combine
 import OliviaLogger
 
 /// Stub implementation of SolanaService for Solana+Nostr+Noise+Magic Block architecture
-/// Replaces the legacy BLE network relay networking with no-op implementations
+/// Replaces the legacy Solana network relay networking with no-op implementations
 final class SolanaServiceStub: Transport {
     
     // MARK: - Transport Protocol Implementation
