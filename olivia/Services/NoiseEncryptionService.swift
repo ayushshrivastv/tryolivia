@@ -11,7 +11,7 @@
 ///
 /// High-level encryption service that manages Noise Protocol sessions for secure
 /// peer-to-peer communication in OLIVIA. Acts as the bridge between the transport
-/// layer (BLEService) and the cryptographic layer (NoiseProtocol).
+/// layer (SolanaService) and the cryptographic layer (NoiseProtocol).
 ///
 /// ## Overview
 /// This service provides a simplified API for establishing and managing encrypted
@@ -60,7 +60,7 @@
 /// ```
 ///
 /// ## Integration Points
-/// - **BLEService**: Calls this service for all private messages
+/// - **SolanaService**: Calls this service for all private messages
 /// - **ChatViewModel**: Monitors encryption status for UI indicators
 /// - **KeychainManager**: Secure storage for identity keys
 ///

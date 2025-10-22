@@ -4,7 +4,7 @@ import Foundation
 final class VerificationService {
     static let shared = VerificationService()
 
-    // Injected Noise service from the running transport (do NOT create new BLEService)
+    // Injected Noise service from the running SolanaService transport
     private var noise: NoiseEncryptionService?
     func configure(with noise: NoiseEncryptionService) { self.noise = noise }
 
