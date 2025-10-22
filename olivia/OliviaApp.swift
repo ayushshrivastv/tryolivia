@@ -70,7 +70,7 @@ struct OliviaApp: App {
                 .onChange(of: scenePhase) { newPhase in
                     switch newPhase {
                     case .background:
-                        // Keep Solana+Nostr+Noise network running in background; BLEService adapts scanning automatically
+                        // Keep Solana+Nostr+Noise network running in background; SolanaService adapts scanning automatically
                         // Always send Tor to dormant on background for a clean restart later.
                         TorManager.shared.setAppForeground(false)
                         TorManager.shared.goDormantOnBackground()

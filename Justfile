@@ -3,7 +3,7 @@
 
 # Default recipe - shows available commands
 default:
-    @echo "OLIVIA DAO Communication Network Build Commands:"
+    @echo "OLIVIA Communication Network Build Commands:"
     @echo "  just run     - Build and run the macOS app"
     @echo "  just build   - Build the macOS app only"
     @echo "  just clean   - Clean build artifacts and restore original files"
@@ -77,7 +77,7 @@ dev-run: check
 
 # Show app info
 info:
-    @echo "OLIVIA - Decentralized DAO Communication Network"
+    @echo "OLIVIA - Decentralized Communication Network"
     @echo "======================================"
     @echo "• Native macOS SwiftUI app"
     @echo "• Solana blockchain governance"
@@ -111,11 +111,11 @@ nuke:
 
 # Deploy Solana contracts (delegates to separate script)
 deploy-solana:
-    @echo "🚀 Deploying OLIVIA DAO to Solana..."
+    @echo "Deploying OLIVIA to Solana..."
     @echo "This will run the dedicated Solana deployment script"
     @cd Solana && ./deploy-mainnet.sh
 
 # Initialize DAO with sample data
 init-dao:
-    @echo "🏛️ Initializing OLIVIA DAO..."
+    @echo "Initializing OLIVIA..."
     @cd Solana && npm run init-dao
