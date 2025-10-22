@@ -23,7 +23,7 @@
 ///
 /// ## Architecture
 /// The ViewModel acts as:
-/// - **OliviaDelegate**: Receives messages and events from BLEService
+/// - **OliviaDelegate**: Receives messages and events from SolanaService
 /// - **State Manager**: Maintains all UI-relevant state with @Published properties
 /// - **Command Processor**: Handles IRC-style commands (/msg, /who, etc.)
 /// - **Message Router**: Directs messages to appropriate chats (public/private)
@@ -503,7 +503,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     ) {
         self.keychain = keychain
         self.identityManager = identityManager
-        self.meshService = BLEServiceStub()
+        self.meshService = SolanaService(keychain: keychain, idBridge: NostrIdentityBridge(), identityManager: identityManager)
         self.solanaTransport = SolanaTransport(keychain: keychain)
         
         // Load persisted read receipts
@@ -655,7 +655,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
                 .store(in: &self.cancellables)
         }
 
-        // Set up Noise encryption callbacks
+        // Set up Noise encryption callbacks (SolanaService has integrated Noise support)
         setupNoiseCallbacks()
 
         // Observe location channel selection
