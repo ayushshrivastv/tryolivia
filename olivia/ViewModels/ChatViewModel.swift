@@ -350,6 +350,7 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     
     let meshService: Transport
     let identityManager: SecureIdentityStateManagerProtocol
+    let usernameService: UsernameService
     
     // Solana+Nostr+Noise/DAO Services
     private let solanaTransport: SolanaTransport
@@ -505,6 +506,16 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         self.identityManager = identityManager
         self.meshService = SolanaService(keychain: keychain, idBridge: NostrIdentityBridge(), identityManager: identityManager)
         self.solanaTransport = SolanaTransport(keychain: keychain)
+        
+        // Initialize username service with required dependencies
+        let solanaManager = SolanaManager()
+        let ephemeralRollupManager = EphemeralRollupManager(solanaManager: solanaManager)
+        let daoProgramInterface = DAOProgramInterface(solanaManager: solanaManager)
+        self.usernameService = UsernameService(
+            solanaManager: solanaManager,
+            ephemeralRollupManager: ephemeralRollupManager,
+            daoProgramInterface: daoProgramInterface
+        )
         
         // Load persisted read receipts
         if let data = UserDefaults.standard.data(forKey: "sentReadReceipts"),
@@ -1413,6 +1424,14 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         // Ignore messages that are empty or whitespace-only to prevent blank lines
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+        
+        // Check for payment commands first
+        if let paymentCommand = usernameService.parsePaymentCommand(content) {
+            Task { @MainActor in
+                await handlePaymentCommand(paymentCommand, originalMessage: content)
+            }
+            return
+        }
         
         // Check for commands
         if content.hasPrefix("/") {
@@ -3286,27 +3305,47 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     
     // MARK: - Autocomplete
     
+    /// Cache for registered usernames to avoid repeated lookups
+    @Published private var cachedRegisteredUsernames: [String] = []
+    private var lastUsernameCacheUpdate: Date = .distantPast
+    private let usernameCacheInterval: TimeInterval = 60 // Cache for 60 seconds
+    
     func updateAutocomplete(for text: String, cursorPosition: Int) {
+        // Refresh username cache if needed
+        if Date().timeIntervalSince(lastUsernameCacheUpdate) > usernameCacheInterval {
+            Task {
+                await refreshRegisteredUsernames()
+            }
+        }
+        
         // Build candidate list based on active channel
         let peerCandidates: [String] = {
+            var candidates = Set<String>()
+            
+            // Add registered usernames (prefixed with @)
+            for username in cachedRegisteredUsernames {
+                candidates.insert("@\(username)")
+            }
+            
             switch activeChannel {
             case .network:
                 let values = meshService.getPeerNicknames().values
-                return Array(values.filter { $0 != meshService.myNickname })
+                let filtered = values.filter { $0 != meshService.myNickname }
+                candidates.formUnion(filtered)
             case .location(let ch):
                 // From geochash participants we have seen via Nostr events
-                var tokens = Set<String>()
                 for (pubkey, nick) in geoNicknames {
                     let suffix = String(pubkey.suffix(4))
-                    tokens.insert("\(nick)#\(suffix)")
+                    candidates.insert("\(nick)#\(suffix)")
                 }
                 // Optionally exclude self nick#abcd from suggestions
                 if let id = try? NostrIdentityBridge.deriveIdentity(forGeohash: ch.geohash) {
                     let myToken = nickname + "#" + String(id.publicKeyHex.suffix(4))
-                    tokens.remove(myToken)
+                    candidates.remove(myToken)
                 }
-                return Array(tokens)
             }
+            
+            return Array(candidates)
         }()
 
         let (suggestions, range) = autocompleteService.getSuggestions(
@@ -3341,6 +3380,24 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         
         // Return new cursor position
         return range.location + nickname.count + (nickname.hasPrefix("@") ? 1 : 2)
+    }
+    
+    /// Refresh the cache of registered usernames from the username service
+    private func refreshRegisteredUsernames() async {
+        // In a real implementation, this would query the on-chain username registry
+        // For now, we'll use the username service's search functionality
+        do {
+            // Get recent/popular usernames (would implement pagination in production)
+            let results = try await usernameService.searchUsernames("")
+            
+            await MainActor.run {
+                cachedRegisteredUsernames = results.map { $0.username }
+                lastUsernameCacheUpdate = Date()
+            }
+        } catch {
+            // Silently fail - autocomplete will work with other sources
+            print("⚠️ Failed to refresh username cache: \(error)")
+        }
     }
     
     // MARK: - Message Formatting
@@ -4442,12 +4499,98 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     }
     
     // MARK: - OliviaDelegate Methods
-    
     // MARK: - Command Handling
     
     /// Processes IRC-style commands starting with '/'.
     /// - Parameter command: The full command string including the leading slash
     /// - Note: Supports commands like /nick, /msg, /who, /slap, /clear, /help
+    
+    /// Handle payment commands like "Send 0.1 SOL to @alice"
+    @MainActor
+    private func handlePaymentCommand(_ paymentCommand: PaymentCommand, originalMessage: String) async {
+        do {
+            // Show loading state
+            let loadingMessage = "💸 Sending \(Double(paymentCommand.amount) / 1_000_000_000) SOL to @\(paymentCommand.username)..."
+            addSystemMessage(loadingMessage)
+            
+            // Send gasless payment
+            let transactionId = try await usernameService.sendPaymentToUsername(
+                username: paymentCommand.username,
+                amount: paymentCommand.amount,
+                message: paymentCommand.message
+            )
+            
+            // Show success message
+            let successMessage = "✅ Payment sent to @\(paymentCommand.username)! Transaction: \(transactionId.prefix(8))..."
+            addSystemMessage(successMessage)
+            
+            // Add payment message to chat
+            let paymentChatMessage = "💰 Sent \(Double(paymentCommand.amount) / 1_000_000_000) SOL to @\(paymentCommand.username): \(paymentCommand.message)"
+            addLocalMessage(paymentChatMessage, isPayment: true)
+            
+        } catch {
+            // Show error message
+            let errorMessage = "❌ Payment failed: \(error.localizedDescription)"
+            addSystemMessage(errorMessage)
+        }
+    }
+    
+    /// Add a system message to the current chat
+    private func addSystemMessage(_ content: String) {
+        let systemMessage = OliviaMessage(
+            id: UUID().uuidString,
+            sender: "System",
+            content: content,
+            timestamp: Date(),
+            isRelay: false,
+            originalSender: nil,
+            isPrivate: false,
+            recipientNickname: nil,
+            senderPeerID: PeerID(str: "system"),
+            mentions: nil
+        )
+        
+        switch activeChannel {
+        case .network:
+            meshTimeline.append(systemMessage)
+        case .location(let ch):
+            var timeline = geoTimelines[ch.geohash] ?? []
+            timeline.append(systemMessage)
+            geoTimelines[ch.geohash] = timeline
+        }
+        
+        objectWillChange.send()
+    }
+    
+    /// Add a local message (like payment confirmation) to chat
+    private func addLocalMessage(_ content: String, isPayment: Bool = false) {
+        let localMessage = OliviaMessage(
+            id: UUID().uuidString,
+            sender: nickname,
+            content: content,
+            timestamp: Date(),
+            isRelay: false,
+            originalSender: nil,
+            isPrivate: false,
+            recipientNickname: nil,
+            senderPeerID: meshService.myPeerID,
+            mentions: nil
+        )
+        
+        switch activeChannel {
+        case .network:
+            meshTimeline.append(localMessage)
+        case .location(let ch):
+            var timeline = geoTimelines[ch.geohash] ?? []
+            timeline.append(localMessage)
+            geoTimelines[ch.geohash] = timeline
+        }
+        
+        objectWillChange.send()
+    }
+    
+    // MARK: - Command Processing
+    
     @MainActor
     private func handleCommand(_ command: String) {
         let result = commandProcessor.process(command)

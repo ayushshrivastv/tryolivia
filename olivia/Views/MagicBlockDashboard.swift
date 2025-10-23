@@ -572,10 +572,8 @@ struct MagicBlockDashboard: View {
 struct MagicBlockDashboard_Previews: PreviewProvider {
     static var previews: some View {
         let mockSolanaManager = SolanaManager()
-        let mockDAOInterface = DAOProgramInterface(solanaManager: mockSolanaManager)
         let mockEphemeralManager = EphemeralRollupManager(
-            solanaManager: mockSolanaManager,
-            daoInterface: mockDAOInterface
+            solanaManager: mockSolanaManager
         )
         
         MagicBlockDashboard(ephemeralManager: mockEphemeralManager)

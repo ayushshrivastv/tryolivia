@@ -48,6 +48,7 @@ struct ContentView: View {
     @State private var lastScrollTime: Date = .distantPast
     @State private var scrollThrottleTimer: Timer?
     @State private var autocompleteDebounceTimer: Timer?
+    @State private var showUsernameSelection = false
     @State private var showLocationChannelsSheet = false
     @State private var showVerifySheet = false
     @State private var expandedMessageIDs: Set<String> = []
@@ -220,6 +221,9 @@ struct ContentView: View {
             AppInfoView()
                 .onAppear { viewModel.isAppInfoPresented = true }
                 .onDisappear { viewModel.isAppInfoPresented = false }
+        }
+        .sheet(isPresented: $showUsernameSelection) {
+            UsernameSelectionView(usernameService: viewModel.usernameService)
         }
         .sheet(isPresented: Binding(
             get: { viewModel.showingFingerprintFor != nil },

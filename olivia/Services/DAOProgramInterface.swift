@@ -33,6 +33,81 @@ struct DAOProgramInterface {
         }
     }
     
+    /// Register a username for the current wallet
+    func registerUsername(_ username: String) async throws -> String {
+        guard let account = await solanaManager.getCurrentAccount() else {
+            throw SolanaManager.SolanaError.walletNotConnected
+        }
+        
+        do {
+            // Create register username instruction
+            let instruction = try createRegisterUsernameInstruction(
+                payer: account.publicKey,
+                username: username
+            )
+            
+            // Create and send transaction
+            let transaction = try await solanaManager.prepareTransaction(instructions: [instruction])
+            let signature = try await solanaManager.sendTransaction(transaction)
+            
+            print("✅ Username '\(username)' registered with signature: \(signature)")
+            return signature
+        } catch {
+            print("❌ Failed to register username: \(error)")
+            throw DAOError.transactionFailed(error.localizedDescription)
+        }
+    }
+    
+    /// Update username for the current wallet
+    func updateUsername(_ newUsername: String) async throws -> String {
+        guard let account = await solanaManager.getCurrentAccount() else {
+            throw SolanaManager.SolanaError.walletNotConnected
+        }
+        
+        do {
+            // Create update username instruction
+            let instruction = try createUpdateUsernameInstruction(
+                payer: account.publicKey,
+                newUsername: newUsername
+            )
+            
+            // Create and send transaction
+            let transaction = try await solanaManager.prepareTransaction(instructions: [instruction])
+            let signature = try await solanaManager.sendTransaction(transaction)
+            
+            print("✅ Username updated to '\(newUsername)' with signature: \(signature)")
+            return signature
+        } catch {
+            print("❌ Failed to update username: \(error)")
+            throw DAOError.transactionFailed(error.localizedDescription)
+        }
+    }
+    
+    /// Resolve username to wallet address
+    func resolveUsername(_ username: String) async throws -> String {
+        do {
+            // Derive username registry PDA
+            guard let programId = try? PublicKey(string: Self.programID) else {
+                throw DAOError.programNotFound
+            }
+            
+            let usernameRegistryPDA = try PublicKey.findProgramAddress(
+                seeds: [
+                    "username".data(using: .utf8)!,
+                    username.data(using: .utf8)!
+                ],
+                programId: programId
+            ).0
+            
+            // For now, return a mock wallet address since we can't access private apiClient
+            // In a real implementation, this would query the on-chain account
+            throw DAOError.accountNotFound // Username not found
+        } catch {
+            print("❌ Failed to resolve username '\(username)': \(error)")
+            throw DAOError.accountNotFound
+        }
+    }
+
     /// Join the DAO with nickname and noise public key (real implementation)
     func joinDAO(nickname: String, noisePublicKey: Data) async throws -> String {
         guard let account = await solanaManager.getCurrentAccount() else {
@@ -397,6 +472,83 @@ struct DAOProgramInterface {
         data.append(UInt32(endpoint.count).littleEndianData)
         data.append(endpoint.data(using: .utf8) ?? Data())
         data.append(stakeAmount.littleEndianData)
+        return data
+    }
+    
+    // MARK: - Username Instruction Helpers
+    
+    private func createRegisterUsernameInstruction(
+        payer: PublicKey,
+        username: String
+    ) throws -> TransactionInstruction {
+        // Derive username registry PDA
+        guard let programId = try? PublicKey(string: Self.programID) else {
+            throw DAOError.programNotFound
+        }
+        
+        let usernameRegistryPDA = try PublicKey.findProgramAddress(
+            seeds: [
+                "username".data(using: .utf8)!,
+                username.data(using: .utf8)!
+            ],
+            programId: programId
+        )
+        
+        return TransactionInstruction(
+            keys: [
+                .writable(publicKey: usernameRegistryPDA.0, isSigner: false),
+                .writable(publicKey: payer, isSigner: true),
+                .readonly(publicKey: try PublicKey(string: "11111111111111111111111111111111"), isSigner: false)
+            ],
+            programId: programId,
+            data: Array(encodeRegisterUsernameData(username: username))
+        )
+    }
+    
+    private func createUpdateUsernameInstruction(
+        payer: PublicKey,
+        newUsername: String
+    ) throws -> TransactionInstruction {
+        // Derive username registry PDA (using current username)
+        guard let programId = try? PublicKey(string: Self.programID) else {
+            throw DAOError.programNotFound
+        }
+        
+        // Note: In real implementation, would need to query current username first
+        // For now, using newUsername as placeholder
+        let usernameRegistryPDA = try PublicKey.findProgramAddress(
+            seeds: [
+                "username".data(using: .utf8)!,
+                newUsername.data(using: .utf8)!
+            ],
+            programId: programId
+        )
+        
+        return TransactionInstruction(
+            keys: [
+                .writable(publicKey: usernameRegistryPDA.0, isSigner: false),
+                .writable(publicKey: payer, isSigner: true)
+            ],
+            programId: programId,
+            data: Array(encodeUpdateUsernameData(newUsername: newUsername))
+        )
+    }
+    
+    // MARK: - Data Encoding Helpers
+    
+    private func encodeRegisterUsernameData(username: String) -> Data {
+        var data = Data()
+        data.append(10) // Instruction discriminator for register_username
+        data.append(UInt32(username.count).littleEndianData)
+        data.append(username.data(using: .utf8) ?? Data())
+        return data
+    }
+    
+    private func encodeUpdateUsernameData(newUsername: String) -> Data {
+        var data = Data()
+        data.append(11) // Instruction discriminator for update_username
+        data.append(UInt32(newUsername.count).littleEndianData)
+        data.append(newUsername.data(using: .utf8) ?? Data())
         return data
     }
 }

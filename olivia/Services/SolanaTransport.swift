@@ -75,8 +75,7 @@ class SolanaTransport: ObservableObject, Transport {
         
         // Magic Block: Initialize Ephemeral Rollup manager for gasless transactions
         self.ephemeralRollupManager = EphemeralRollupManager(
-            solanaManager: solanaManager,
-            daoInterface: daoInterface
+            solanaManager: solanaManager
         )
         
         // Initialize noise service for E2E encryption

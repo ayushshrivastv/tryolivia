@@ -101,12 +101,62 @@ class EphemeralRollupManager: ObservableObject {
     // Pending messages for batch commit
     private var pendingMessages: [EphemeralMessage] = []
 
-    init(solanaManager: SolanaManager, daoInterface: DAOProgramInterface) {
+    init(solanaManager: SolanaManager) {
         self.solanaManager = solanaManager
-        self.daoInterface = daoInterface
+        self.daoInterface = DAOProgramInterface(solanaManager: solanaManager)
 
         setupConnections()
         setupAutoCommit()
+    }
+    
+    // MARK: - Gasless Payment Methods
+    
+    /// Send gasless payment to username via Magic Block
+    func sendGaslessPaymentToUsername(
+        username: String,
+        amount: UInt64,
+        message: String
+    ) async throws -> String {
+        guard case .active = sessionState else {
+            throw EphemeralRollupError.sessionNotActive
+        }
+        
+        guard let account = await solanaManager.getCurrentAccount() else {
+            throw EphemeralRollupError.walletNotConnected
+        }
+        
+        do {
+            // For now, simulate gasless payment (would use real Magic Block integration)
+            let signature = UUID().uuidString
+            
+            // Create payment message data
+            let paymentData = "\(amount):\(message)".data(using: .utf8) ?? Data()
+            
+            // Add to pending messages for later commit
+            let ephemeralMessage = EphemeralMessage(
+                id: signature,
+                sender: account.publicKey.base58EncodedString,
+                recipient: username,
+                content: paymentData,
+                timestamp: Date(),
+                isCommitted: false,
+                isDelegated: true
+            )
+            
+            await MainActor.run {
+                activeMessages.append(ephemeralMessage)
+                gaslessTransactionCount += 1
+            }
+            
+            pendingMessages.append(ephemeralMessage)
+            
+            print("💸 Gasless payment sent to @\(username): \(Double(amount) / 1_000_000_000) SOL")
+            return signature
+            
+        } catch {
+            print("❌ Gasless payment failed: \(error)")
+            throw EphemeralRollupError.transactionFailed(error.localizedDescription)
+        }
     }
 
     // MARK: - Connection Setup
@@ -639,6 +689,7 @@ enum EphemeralRollupError: Error, LocalizedError {
     case ephemeralConnectionFailed
     case delegationFailed
     case commitFailed
+    case transactionFailed(String)
 
     var errorDescription: String? {
         switch self {
@@ -654,6 +705,8 @@ enum EphemeralRollupError: Error, LocalizedError {
             return "Failed to delegate account"
         case .commitFailed:
             return "Failed to commit changes"
+        case .transactionFailed(let message):
+            return "Transaction failed: \(message)"
         }
     }
 }

@@ -1,13 +1,15 @@
 [toolchain]
-anchor_version = "0.29.0"
+anchor_version = "0.31.1"
 
 [features]
 resolution = true
 skip-lint = false
 
+[programs.localnet]
+olivia = "BQcHvNqgAT7TQonNJR6zoxu7eNCy9c7mB44K9CVaUcA"
+
 [programs.devnet]
-olivia_dao = "BQcHvNqgAT7TQonNJR6zoxu7eNCy9c7mB44K9CVaUcA"
-olivia_dao_arcium = "ARCiUMoLiViADAOEncryptedComputeProgram11111"
+olivia = "BQcHvNqgAT7TQonNJR6zoxu7eNCy9c7mB44K9CVaUcA"
 
 [registry]
 url = "https://api.apr.dev"
