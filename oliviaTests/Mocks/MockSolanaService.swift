@@ -7,7 +7,6 @@
 // Licensed under the MIT License - see LICENSE file for details
 //
 import Foundation
-import CoreBluetooth
 @testable import olivia
 
 /// In-memory Solana+Nostr+Noise test harness used by E2E/Integration tests.

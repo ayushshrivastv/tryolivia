@@ -165,7 +165,7 @@ struct LocationChannelsSheet: View {
     private var channelList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                channelRow(title: Strings.meshTitle(meshCount()), subtitlePrefix: Strings.subtitlePrefix(geohash: "Solana+Nostr+Noise network", coverage: bluetoothRangeString()), isSelected: isMeshSelected, titleColor: standardBlue, titleBold: meshCount() > 0) {
+                channelRow(title: Strings.meshTitle(meshCount()), subtitlePrefix: Strings.subtitlePrefix(geohash: "Solana+Nostr+Noise network", coverage: networkRangeString()), isSelected: isMeshSelected, titleColor: standardBlue, titleBold: meshCount() > 0) {
                     manager.select(ChannelID.network)
                     isPresented = false
                 }
@@ -579,7 +579,7 @@ extension LocationChannelsSheet {
         return String(format: "%.1f", value)
     }
 
-    private func bluetoothRangeString() -> String {
+    private func networkRangeString() -> String {
         let usesMetric: Bool = {
             if #available(iOS 16.0, macOS 13.0, *) {
                 return Locale.current.measurementSystem == .metric
@@ -587,7 +587,7 @@ extension LocationChannelsSheet {
                 return Locale.current.usesMetricSystem
             }
         }()
-        // Approximate Solana+Nostr+Noise network LE range for typical mobile devices; environment dependent
+        // Approximate Solana+Nostr+Noise network range for decentralised communication; environment dependent
         return usesMetric ? "~10–50 m" : "~30–160 ft"
     }
 

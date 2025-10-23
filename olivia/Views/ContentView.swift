@@ -283,8 +283,8 @@ struct ContentView: View {
 
             Button("common.cancel", role: .cancel) {}
         }
-        .alert("content.alert.bluetooth_required.title", isPresented: $viewModel.showBluetoothAlert) {
-            Button("content.alert.bluetooth_required.settings") {
+        .alert("content.alert.network_required.title", isPresented: $viewModel.showNetworkAlert) {
+            Button("content.alert.network_required.settings") {
                 #if os(iOS)
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -293,7 +293,7 @@ struct ContentView: View {
             }
             Button("common.ok", role: .cancel) {}
         } message: {
-            Text(viewModel.bluetoothAlertMessage)
+            Text(viewModel.networkAlertMessage)
         }
         .onDisappear {
             // Clean up timers

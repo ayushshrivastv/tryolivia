@@ -7,7 +7,6 @@
 // Licensed under the MIT License - see LICENSE file for details
 //
 import XCTest
-import CoreBluetooth
 @testable import olivia
 
 final class SolanaServiceTests: XCTestCase {
@@ -287,6 +286,6 @@ private final class MockOliviaDelegate: OliviaDelegate {
     func isFavorite(fingerprint: String) -> Bool { return false }
     func didUpdateMessageDeliveryStatus(_ messageID: String, status: DeliveryStatus) {}
     func didReceiveNoisePayload(from peerID: PeerID, type: NoisePayloadType, payload: Data, timestamp: Date) {}
-    func didUpdateBluetoothState(_ state: CBManagerState) {}
+    func didUpdateNetworkState(_ connected: Bool) {}
     func didReceivePublicMessage(from peerID: String, nickname: String, content: String, timestamp: Date) {}
 }

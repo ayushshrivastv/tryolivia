@@ -400,8 +400,8 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
     @Published var showingFingerprintFor: String? = nil  // Currently showing fingerprint sheet for peer
     
     // Solana+Nostr+Noise network state management
-    @Published var showBluetoothAlert = false
-    @Published var bluetoothAlertMessage = ""
+    @Published var showNetworkAlert = false
+    @Published var networkAlertMessage = ""
     @Published var networkConnected: Bool = false
 
     // Presentation state for privacy gating
@@ -2441,12 +2441,12 @@ final class ChatViewModel: ObservableObject, OliviaDelegate {
         
         if isConnected {
             // Network is connected - hide any connectivity alerts
-            showBluetoothAlert = false
-            bluetoothAlertMessage = ""
+            showNetworkAlert = false
+            networkAlertMessage = ""
         } else {
             // Network is disconnected - could show connectivity alert if needed
             // For now, we don't show alerts since Solana+Nostr+Noise handles offline gracefully
-            showBluetoothAlert = false
+            showNetworkAlert = false
         }
     }
     
