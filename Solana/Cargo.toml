@@ -1,0 +1,26 @@
+[workspace]
+members = [
+    "programs/olivia",
+    "encrypted-ixs"
+]
+resolver = "2"
+
+[workspace.dependencies]
+anchor-lang = "0.31.1"
+arcium-anchor = "0.3.1"
+arcis-imports = "0.3.0"
+
+# Optimize for Solana BPF constraints
+[profile.release]
+opt-level = "z"           # Optimize for size
+lto = "fat"               # Link-time optimization
+codegen-units = 1         # Single codegen unit
+overflow-checks = false   # Disable overflow checks
+strip = "debuginfo"       # Strip debug info
+
+# Patch problematic dependencies to Solana-compatible versions
+[patch.crates-io]
+# Force older curve25519-dalek that works with Solana BPF
+curve25519-dalek = { git = "https://github.com/dalek-cryptography/curve25519-dalek", tag = "3.2.0", default-features = false, features = ["u64_backend"] }
+# Force older ed25519-dalek compatible with curve25519-dalek 3.x  
+ed25519-dalek = { git = "https://github.com/dalek-cryptography/ed25519-dalek", tag = "1.0.1", default-features = false, features = ["u64_backend"] }

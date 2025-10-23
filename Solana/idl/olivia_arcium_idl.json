@@ -1,0 +1,419 @@
+{
+  "version": "0.1.0",
+  "name": "olivia",
+  "instructions": [
+    {
+      "name": "initPrivateRoutingCompDef",
+      "docs": [
+        "Initialize computation definition for private routing verification",
+        "This is called via Arcium SDK - no Rust implementation in program"
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "mxe",
+          "isMut": false,
+          "isSigner": false,
+          "docs": ["MXE account for cluster"]
+        },
+        {
+          "name": "compDef",
+          "isMut": true,
+          "isSigner": false,
+          "docs": ["Computation definition PDA"]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "sendPrivateMessage",
+      "docs": [
+        "Send message with private routing (hides sender/recipient on-chain)",
+        "Queues encrypted computation to Arcium MXE"
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "mxe",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "computation",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signPdaAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "computationOffset",
+          "type": "u64"
+        },
+        {
+          "name": "encryptedRouting",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "pubKey",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "nonce",
+          "type": "u128"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "sendPrivateMessageCallback",
+      "docs": [
+        "Callback for private message routing - receives encrypted result from MXE"
+      ],
+      "accounts": [
+        {
+          "name": "computation",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "output",
+          "type": "bytes"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "initDeliveryVerificationCompDef",
+      "docs": [
+        "Initialize computation definition for delivery verification"
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "mxe",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "compDef",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "verifyPrivateDelivery",
+      "docs": [
+        "Verify message delivery privately using MPC"
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "mxe",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "computation",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signPdaAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "computationOffset",
+          "type": "u64"
+        },
+        {
+          "name": "encryptedProof",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "pubKey",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "nonce",
+          "type": "u128"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "verifyPrivateDeliveryCallback",
+      "docs": [
+        "Callback for delivery verification"
+      ],
+      "accounts": [
+        {
+          "name": "computation",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "output",
+          "type": "bytes"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "initPrivateQueryCompDef",
+      "docs": [
+        "Initialize computation definition for private queries (PIR)"
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "mxe",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "compDef",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "queryMessagesPrivately",
+      "docs": [
+        "Query messages privately using PIR - no one knows what you're querying!"
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "mxe",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "computation",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signPdaAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "computationOffset",
+          "type": "u64"
+        },
+        {
+          "name": "encryptedQuery",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "pubKey",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "nonce",
+          "type": "u128"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "queryMessagesPrivatelyCallback",
+      "docs": [
+        "Callback for private query - returns encrypted result"
+      ],
+      "accounts": [
+        {
+          "name": "computation",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "output",
+          "type": "bytes"
+        }
+      ],
+      "returns": null
+    }
+  ],
+  "events": [
+    {
+      "name": "PrivateRoutingVerified",
+      "fields": [
+        {
+          "name": "isValidCiphertext",
+          "type": {
+            "array": ["u8", 32]
+          },
+          "index": false
+        },
+        {
+          "name": "feeCiphertext",
+          "type": {
+            "array": ["u8", 32]
+          },
+          "index": false
+        },
+        {
+          "name": "nonce",
+          "type": {
+            "array": ["u8", 16]
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "PrivateDeliveryVerified",
+      "fields": [
+        {
+          "name": "isDeliveredCiphertext",
+          "type": {
+            "array": ["u8", 32]
+          },
+          "index": false
+        },
+        {
+          "name": "rewardCiphertext",
+          "type": {
+            "array": ["u8", 32]
+          },
+          "index": false
+        },
+        {
+          "name": "nonce",
+          "type": {
+            "array": ["u8", 16]
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "PrivateQueryResult",
+      "fields": [
+        {
+          "name": "messageCountCiphertext",
+          "type": {
+            "array": ["u8", 32]
+          },
+          "index": false
+        },
+        {
+          "name": "hasMessagesCiphertext",
+          "type": {
+            "array": ["u8", 32]
+          },
+          "index": false
+        },
+        {
+          "name": "nonce",
+          "type": {
+            "array": ["u8", 16]
+          },
+          "index": false
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "address": "BQcHvNqgAT7TQonNJR6zoxu7eNCy9c7mB44K9CVaUcA",
+    "arcium": {
+      "mxeClusterOffset": 1,
+      "circuits": {
+        "verifyPrivateRouting": "build/verify_private_routing_testnet.arcis",
+        "verifyDeliveryProof": "build/verify_delivery_proof_testnet.arcis",
+        "privateMessageQuery": "build/private_message_query_testnet.arcis"
+      }
+    }
+  }
+}
