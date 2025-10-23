@@ -125,3 +125,5 @@ mainnet-token-mint.txt
 # Demo and test data files
 demo-data.json
 **/demo-data.json
+Solana/Cargo.lock
+Solana/artifacts/
