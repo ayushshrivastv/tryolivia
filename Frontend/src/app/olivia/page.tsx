@@ -64,8 +64,8 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="grid w-screen min-h-screen max-w-[1600px] gap-4 self-center bg-background px-6 lg:px-20">
-      <header className="h-[4.5rem] grid w-full items-center bg-background">
+    <div className="flex flex-col w-screen h-screen max-w-[1600px] mx-auto bg-background overflow-hidden">
+      <header className="h-[4.5rem] flex-shrink-0 grid w-full items-center bg-background px-6 lg:px-20">
         <nav className="flex items-center justify-between" aria-label="Global">
           <Link
             href="/"
@@ -79,69 +79,72 @@ export default function SignInPage() {
         </nav>
       </header>
 
-      <div className="hide-scrollbar min-h-[calc(100vh-7rem)]">
-        <div className="flex h-full w-full items-center justify-center">
-          <div className="w-full max-w-5xl px-4 relative">
-            <div 
-              className="relative cursor-pointer"
-              onClick={handleVideoClick}
+      <div className="flex-1 flex items-center justify-center overflow-hidden px-6 lg:px-20 pb-6">
+        <div className="w-full h-full max-w-7xl relative flex items-center justify-center">
+          <div 
+            className="relative cursor-pointer w-full h-full flex items-center justify-center"
+            onClick={handleVideoClick}
+            style={{
+              maxHeight: 'calc(100vh - 7rem)',
+            }}
+          >
+            <video
+              ref={videoRef}
+              src="/Arcium Clip 1 .mp4"
+              controls
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              className="rounded-3xl shadow-2xl"
+              style={{
+                width: '100%',
+                height: '100%',
+                maxWidth: '100%',
+                maxHeight: 'calc(100vh - 7rem)',
+                objectFit: 'contain',
+                aspectRatio: '16/9',
+                borderRadius: '24px',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+              }}
             >
-              <video
-                ref={videoRef}
-                src="/Arcium Clip 1 .mp4"
-                controls
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                className="w-full rounded-3xl shadow-2xl"
+              Your browser does not support the video tag.
+            </video>
+            {showPlayButton && !isPlaying && (
+              <div
+                className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-3xl"
                 style={{
-                  width: '100%',
-                  maxWidth: '1280px',
-                  height: 'auto',
-                  aspectRatio: '16/9',
                   borderRadius: '24px',
-                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const video = videoRef.current;
+                  if (video) {
+                    video.play().catch((error) => {
+                      console.error('Error playing video:', error);
+                    });
+                  }
                 }}
               >
-                Your browser does not support the video tag.
-              </video>
-              {showPlayButton && !isPlaying && (
                 <div
-                  className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-3xl"
+                  className="w-20 h-20 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-all"
                   style={{
-                    borderRadius: '24px',
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const video = videoRef.current;
-                    if (video) {
-                      video.play().catch((error) => {
-                        console.error('Error playing video:', error);
-                      });
-                    }
+                    border: '3px solid rgba(255, 255, 255, 0.5)',
                   }}
                 >
-                  <div
-                    className="w-20 h-20 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-all"
-                    style={{
-                      border: '3px solid rgba(255, 255, 255, 0.5)',
-                    }}
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="white"
+                    className="ml-1"
                   >
-                    <svg
-                      width="40"
-                      height="40"
-                      viewBox="0 0 24 24"
-                      fill="white"
-                      className="ml-1"
-                    >
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
