@@ -13,22 +13,209 @@ import Link from 'next/link';
 
 export default function SignInPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const youtubePlayerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPlayButton, setShowPlayButton] = useState(true);
+  const [videoError, setVideoError] = useState(false);
+  const [autoPlayStarted, setAutoPlayStarted] = useState(false);
+  
+  // Use external video URL from env variable - initialized in useEffect to avoid hydration mismatch
+  // Set NEXT_PUBLIC_VIDEO_URL in Vercel environment variables with your video URL
+  const [videoSrc, setVideoSrc] = useState<string>('');
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Check if URL is YouTube
+  const isYouTube = videoSrc.includes('youtube.com') || videoSrc.includes('youtu.be');
+  
+  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState<string>('');
+  const [youtubeVideoId, setYoutubeVideoId] = useState<string>('');
+  const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
+
+  // Set video source after mount to avoid hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+    const videoUrl = process.env.NEXT_PUBLIC_VIDEO_URL || '';
+    setVideoSrc(videoUrl);
+    // Start playing immediately if video is available (no delay)
+    if (videoUrl) {
+      setAutoPlayStarted(true);
+    }
+  }, []);
+
+  // Extract YouTube video ID
+  useEffect(() => {
+    if (isYouTube && videoSrc) {
+      let videoId = '';
+      if (videoSrc.includes('youtube.com/watch?v=')) {
+        videoId = videoSrc.split('v=')[1]?.split('&')[0] || '';
+      } else if (videoSrc.includes('youtu.be/')) {
+        videoId = videoSrc.split('youtu.be/')[1]?.split('?')[0] || '';
+      } else if (videoSrc.includes('youtube.com/embed/')) {
+        videoId = videoSrc.split('embed/')[1]?.split('?')[0] || '';
+      }
+      
+      if (videoId) {
+        setYoutubeVideoId(videoId);
+        // Don't set embed URL yet - wait for 4 seconds
+      }
+    } else {
+      setYoutubeEmbedUrl('');
+      setYoutubeVideoId('');
+    }
+  }, [videoSrc, isYouTube]);
+
+  // Initialize YouTube IFrame API - only after 4 second delay
+  useEffect(() => {
+    if (!isYouTube || !youtubeVideoId || !autoPlayStarted) return;
+
+    const loadYouTubeAPI = () => {
+      if (window.YT && window.YT.Player && youtubePlayerRef.current && !youtubePlayer) {
+        try {
+          // Create YouTube player - API will create iframe for us
+          // Video will start immediately with autoplay
+          const player = new window.YT.Player(youtubePlayerRef.current, {
+            videoId: youtubeVideoId,
+            playerVars: {
+              autoplay: 1, // Start playing immediately
+              mute: 1,
+              loop: 1,
+              playlist: youtubeVideoId,
+              controls: 1,
+              modestbranding: 1,
+              enablejsapi: 1,
+            },
+            events: {
+              onReady: (event: any) => {
+                console.log('YouTube player ready');
+                // Set quality: try 1440p60 first, fallback to 1080p
+                try {
+                  const qualityLevels = event.target.getAvailableQualityLevels();
+                  console.log('Available qualities:', qualityLevels);
+                  
+                  // Try to set 1440p60 (hd1440) first, then 1080p (hd1080)
+                  if (qualityLevels.includes('hd1440')) {
+                    event.target.setPlaybackQuality('hd1440');
+                    console.log('Set quality to 1440p60');
+                  } else if (qualityLevels.includes('hd1080')) {
+                    event.target.setPlaybackQuality('hd1080');
+                    console.log('Set quality to 1080p');
+                  } else if (qualityLevels.length > 0) {
+                    // Fallback to highest available
+                    event.target.setPlaybackQuality(qualityLevels[0]);
+                    console.log('Set quality to highest available:', qualityLevels[0]);
+                  }
+                  // Video should already be playing with autoplay: 1, but ensure playback after quality change
+                  try {
+                    event.target.playVideo();
+                  } catch (playError) {
+                    console.warn('Could not start video playback:', playError);
+                  }
+                } catch (error) {
+                  console.warn('Could not set quality:', error);
+                  // Ensure playback continues even if quality setting fails
+                  try {
+                    event.target.playVideo();
+                  } catch (playError) {
+                    console.warn('Could not start video playback:', playError);
+                  }
+                }
+              },
+              onStateChange: (event: any) => {
+                if (window.YT && event.data === window.YT.PlayerState.PLAYING) {
+                  setIsPlaying(true);
+                  setShowPlayButton(false);
+                } else if (window.YT && event.data === window.YT.PlayerState.PAUSED) {
+                  setIsPlaying(false);
+                }
+              },
+            },
+          });
+          setYoutubePlayer(player);
+        } catch (error) {
+          console.error('Error creating YouTube player:', error);
+        }
+      }
+    };
+
+    // Load YouTube API script if not already loaded
+    if (!window.YT) {
+      const script = document.createElement('script');
+      script.src = 'https://www.youtube.com/iframe_api';
+      script.async = true;
+      script.onload = () => {
+        // YouTube API will call this when ready
+        window.onYouTubeIframeAPIReady = () => {
+          loadYouTubeAPI();
+        };
+        // If API is already loaded, call directly
+        if (window.YT && window.YT.Player) {
+          loadYouTubeAPI();
+        }
+      };
+      document.body.appendChild(script);
+    } else {
+      loadYouTubeAPI();
+    }
+
+    return () => {
+      if (youtubePlayer) {
+        try {
+          youtubePlayer.destroy();
+          setYoutubePlayer(null);
+        } catch (error) {
+          console.warn('Error destroying player:', error);
+        }
+      }
+    };
+  }, [isYouTube, youtubeVideoId, autoPlayStarted]);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      // Try to play on load
+    if (!videoSrc) {
+      console.log('No video source provided. Set NEXT_PUBLIC_VIDEO_URL in Vercel environment variables.');
+      return;
+    }
+
+    // Start video immediately (no delay)
+    if (isYouTube && youtubeVideoId) {
+      // For YouTube, player will start when autoPlayStarted is true (already set in mount effect)
+      // No action needed here as player initialization happens in separate effect
+    } else if (!isYouTube && videoRef.current) {
+      const video = videoRef.current;
       video.play()
         .then(() => {
           setIsPlaying(true);
           setShowPlayButton(false);
+          setAutoPlayStarted(true);
         })
         .catch((error) => {
           console.log('Autoplay prevented, user interaction required:', error);
           setShowPlayButton(true);
         });
+    }
+
+    if (!isYouTube && videoRef.current) {
+      const video = videoRef.current;
+      
+      // Debug: Log the video source
+      console.log('Video source:', videoSrc);
+      
+      // Set the video source
+      video.src = videoSrc;
+      
+      // Handle video loading errors
+      const handleError = (e: Event) => {
+        console.error('Video failed to load:', e);
+        console.error('Video error details:', video.error);
+        console.error('Video source was:', videoSrc);
+        setVideoError(true);
+      };
+      const handleLoadedData = () => {
+        console.log('Video loaded successfully');
+        setVideoError(false);
+      };
+
+      video.addEventListener('error', handleError);
+      video.addEventListener('loadeddata', handleLoadedData);
 
       // Handle play/pause events
       const handlePlay = () => {
@@ -44,13 +231,19 @@ export default function SignInPage() {
       video.addEventListener('pause', handlePause);
 
       return () => {
+        video.removeEventListener('error', handleError);
+        video.removeEventListener('loadeddata', handleLoadedData);
         video.removeEventListener('play', handlePlay);
         video.removeEventListener('pause', handlePause);
       };
     }
-  }, []);
+  }, [videoSrc, isYouTube, youtubeVideoId]);
 
   const handleVideoClick = () => {
+    if (isYouTube) {
+      // YouTube handles clicks internally, no custom handler needed
+      return;
+    }
     const video = videoRef.current;
     if (video) {
       if (video.paused) {
@@ -82,55 +275,100 @@ export default function SignInPage() {
       <div className="flex-1 flex items-center justify-center overflow-hidden px-6 lg:px-20 pb-6">
         <div className="w-full h-full max-w-7xl relative flex items-center justify-center">
           <div 
-            className="relative cursor-pointer w-full h-full flex items-center justify-center"
+            className={`relative w-full flex items-center justify-center ${!isMounted || (!isYouTube && videoSrc) ? 'cursor-pointer' : ''}`}
             onClick={handleVideoClick}
             style={{
+              maxWidth: '100%',
               maxHeight: 'calc(100vh - 7rem)',
+              width: '100%',
             }}
           >
-            <video
-              ref={videoRef}
-              src="/Arcium Clip 1 .mp4"
-              controls
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              className="rounded-3xl shadow-2xl"
-              style={{
-                width: '100%',
-                height: '100%',
-                maxWidth: '100%',
-                maxHeight: 'calc(100vh - 7rem)',
-                objectFit: 'contain',
-                aspectRatio: '16/9',
-                borderRadius: '24px',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-              }}
-            >
-              Your browser does not support the video tag.
-            </video>
-            {showPlayButton && !isPlaying && (
+            {videoSrc ? (
+              isYouTube && youtubeVideoId ? (
+                <div
+                  ref={youtubePlayerRef}
+                  className="rounded-3xl shadow-2xl overflow-hidden"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxWidth: '100%',
+                    maxHeight: 'calc(100vh - 7rem)',
+                    aspectRatio: '16/9',
+                    minHeight: 0,
+                    borderRadius: '24px',
+                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                  }}
+                  title="Olivia Pitch Video"
+                />
+              ) : (
+                <video
+                  ref={videoRef}
+                  src={videoSrc}
+                  controls
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  className="rounded-3xl shadow-2xl"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxWidth: '100%',
+                    maxHeight: 'calc(100vh - 7rem)',
+                    objectFit: 'contain',
+                    aspectRatio: '16/9',
+                    minHeight: 0,
+                    borderRadius: '24px',
+                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                  }}
+                >
+                  Your browser does not support the video tag.
+                </video>
+              )
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-3xl" style={{ borderRadius: '24px' }}>
+                <div className="text-center text-white p-6 max-w-md">
+                  <p className="text-2xl mb-4 font-semibold">Pitch Video</p>
+                  <p className="text-lg mb-2">Video will be available shortly</p>
+                  <p className="text-sm text-gray-300">
+                    Our pitch video is being finalized and will appear here soon. Please check back later.
+                  </p>
+                </div>
+              </div>
+            )}
+            {videoError && !isYouTube && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-3xl" style={{ borderRadius: '24px' }}>
+                <div className="text-center text-white p-6 max-w-md">
+                  <p className="text-2xl mb-4 font-semibold">Pitch Video</p>
+                  <p className="text-lg mb-2">Video will be available shortly</p>
+                  <p className="text-sm text-gray-300">
+                    Our pitch video is being finalized and will appear here soon. Please check back later.
+                  </p>
+                </div>
+              </div>
+            )}
+            {!isYouTube && showPlayButton && !isPlaying && !autoPlayStarted && (
               <div
-                className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-3xl"
+                className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-3xl pointer-events-none"
                 style={{
                   borderRadius: '24px',
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const video = videoRef.current;
-                  if (video) {
-                    video.play().catch((error) => {
-                      console.error('Error playing video:', error);
-                    });
-                  }
+                  pointerEvents: 'none',
                 }}
               >
                 <div
-                  className="w-20 h-20 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-all"
+                  className="w-20 h-20 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-all pointer-events-auto"
                   style={{
                     border: '3px solid rgba(255, 255, 255, 0.5)',
+                    marginBottom: '60px', // Position above video controls to avoid overlap
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const video = videoRef.current;
+                    if (video) {
+                      video.play().catch((error) => {
+                        console.error('Error playing video:', error);
+                      });
+                    }
                   }}
                 >
                   <svg

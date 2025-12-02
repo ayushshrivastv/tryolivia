@@ -50,5 +50,17 @@ interface Window {
     on: (event: string, callback: (args: unknown) => void) => void;
     removeListener: (event: string, callback: (args: unknown) => void) => void;
   };
+  YT?: {
+    Player: new (element: HTMLElement, config: any) => any;
+    PlayerState: {
+      UNSTARTED: number;
+      ENDED: number;
+      PLAYING: number;
+      PAUSED: number;
+      BUFFERING: number;
+      CUED: number;
+    };
+  };
+  onYouTubeIframeAPIReady?: () => void;
 }
 
