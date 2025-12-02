@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function SignInPage() {
+export default function MagicBlockPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const youtubePlayerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -20,7 +20,7 @@ export default function SignInPage() {
   const [autoPlayStarted, setAutoPlayStarted] = useState(false);
   
   // Use external video URL from env variable - initialized in useEffect to avoid hydration mismatch
-  // Set NEXT_PUBLIC_VIDEO_URL_ARCIUM in Vercel environment variables with your video URL
+  // Set NEXT_PUBLIC_VIDEO_URL_MB in Vercel environment variables with your video URL
   const [videoSrc, setVideoSrc] = useState<string>('');
   const [isMounted, setIsMounted] = useState(false);
 
@@ -33,19 +33,19 @@ export default function SignInPage() {
   // Set video source after mount to avoid hydration mismatch
   useEffect(() => {
     setIsMounted(true);
-    const videoUrl = process.env.NEXT_PUBLIC_VIDEO_URL_ARCIUM || '';
-    console.log('[Olivia Video] Environment variable:', videoUrl ? 'Set' : 'Missing');
-    console.log('[Olivia Video] Video URL:', videoUrl || 'Not configured');
+    const videoUrl = process.env.NEXT_PUBLIC_VIDEO_URL_MB || '';
+    console.log('[MagicBlock Video] Environment variable:', videoUrl ? 'Set' : 'Missing');
+    console.log('[MagicBlock Video] Video URL:', videoUrl || 'Not configured');
     
     if (!videoUrl) {
-      console.warn('[Olivia Video] NEXT_PUBLIC_VIDEO_URL_ARCIUM is not set. Please configure it in Vercel environment variables.');
+      console.warn('[MagicBlock Video] NEXT_PUBLIC_VIDEO_URL_MB is not set. Please configure it in Vercel environment variables.');
     }
     
     setVideoSrc(videoUrl);
     // Start playing immediately if video is available (no delay)
     if (videoUrl) {
       setAutoPlayStarted(true);
-      console.log('[Olivia Video] Auto-play started for:', videoUrl);
+      console.log('[MagicBlock Video] Auto-play started for:', videoUrl);
     }
   }, []);
 
@@ -72,32 +72,32 @@ export default function SignInPage() {
   // Initialize YouTube IFrame API
   useEffect(() => {
     if (!isYouTube || !youtubeVideoId || !autoPlayStarted) {
-      if (!isYouTube) console.log('[Olivia Video] Not a YouTube URL');
-      if (!youtubeVideoId) console.log('[Olivia Video] YouTube video ID not extracted yet');
-      if (!autoPlayStarted) console.log('[Olivia Video] Auto-play not started yet');
+      if (!isYouTube) console.log('[MagicBlock Video] Not a YouTube URL');
+      if (!youtubeVideoId) console.log('[MagicBlock Video] YouTube video ID not extracted yet');
+      if (!autoPlayStarted) console.log('[MagicBlock Video] Auto-play not started yet');
       return;
     }
 
     // Don't reinitialize if player already exists
     if (youtubePlayer) {
-      console.log('[Olivia Video] YouTube player already initialized');
+      console.log('[MagicBlock Video] YouTube player already initialized');
       return;
     }
 
-    console.log('[Olivia Video] Initializing YouTube player for video ID:', youtubeVideoId);
+    console.log('[MagicBlock Video] Initializing YouTube player for video ID:', youtubeVideoId);
 
     const loadYouTubeAPI = () => {
       if (!window.YT || !window.YT.Player) {
-        console.warn('[Olivia Video] YouTube API not loaded yet');
+        console.warn('[MagicBlock Video] YouTube API not loaded yet');
         return;
       }
       
       if (!youtubePlayerRef.current) {
-        console.warn('[Olivia Video] YouTube player container not found');
+        console.warn('[MagicBlock Video] YouTube player container not found');
         return;
       }
       
-      console.log('[Olivia Video] Creating YouTube player...');
+      console.log('[MagicBlock Video] Creating YouTube player...');
       
       try {
         // Create YouTube player - API will create iframe for us
@@ -115,23 +115,23 @@ export default function SignInPage() {
             },
             events: {
               onReady: (event: YTOnReadyEvent) => {
-                console.log('[Olivia Video] YouTube player ready');
+                console.log('[MagicBlock Video] YouTube player ready');
                 // Set quality: try 1440p60 first, fallback to 1080p
                 try {
                   const qualityLevels = event.target.getAvailableQualityLevels();
-                  console.log('[Olivia Video] Available qualities:', qualityLevels);
+                  console.log('[MagicBlock Video] Available qualities:', qualityLevels);
                   
                   // Try to set 1440p60 (hd1440) first, then 1080p (hd1080)
                   if (qualityLevels.includes('hd1440')) {
                     event.target.setPlaybackQuality('hd1440');
-                    console.log('[Olivia Video] Set quality to 1440p60');
+                    console.log('[MagicBlock Video] Set quality to 1440p60');
                   } else if (qualityLevels.includes('hd1080')) {
                     event.target.setPlaybackQuality('hd1080');
-                    console.log('[Olivia Video] Set quality to 1080p');
+                    console.log('[MagicBlock Video] Set quality to 1080p');
                   } else if (qualityLevels.length > 0) {
                     // Fallback to highest available
                     event.target.setPlaybackQuality(qualityLevels[0]);
-                    console.log('[Olivia Video] Set quality to highest available:', qualityLevels[0]);
+                    console.log('[MagicBlock Video] Set quality to highest available:', qualityLevels[0]);
                   }
                   // Video should already be playing with autoplay: 1, but ensure playback after quality change
                   try {
@@ -160,18 +160,18 @@ export default function SignInPage() {
             },
           });
           setYoutubePlayer(player);
-          console.log('[Olivia Video] YouTube player created successfully');
+          console.log('[MagicBlock Video] YouTube player created successfully');
         } catch (error) {
-          console.error('[Olivia Video] Error creating YouTube player:', error);
+          console.error('[MagicBlock Video] Error creating YouTube player:', error);
         }
     };
 
     // Load YouTube API script if not already loaded
     if (!window.YT) {
-      console.log('[Olivia Video] Loading YouTube IFrame API...');
+      console.log('[MagicBlock Video] Loading YouTube IFrame API...');
       // Set up the callback before loading the script
       window.onYouTubeIframeAPIReady = () => {
-        console.log('[Olivia Video] YouTube API ready callback called');
+        console.log('[MagicBlock Video] YouTube API ready callback called');
         loadYouTubeAPI();
       };
       
@@ -179,21 +179,21 @@ export default function SignInPage() {
       script.src = 'https://www.youtube.com/iframe_api';
       script.async = true;
       script.onload = () => {
-        console.log('[Olivia Video] YouTube API script loaded');
+        console.log('[MagicBlock Video] YouTube API script loaded');
         // The API might be ready immediately, check after a short delay
         setTimeout(() => {
           if (window.YT && window.YT.Player && !youtubePlayer) {
-            console.log('[Olivia Video] YouTube API available, loading player...');
+            console.log('[MagicBlock Video] YouTube API available, loading player...');
             loadYouTubeAPI();
           }
         }, 100);
       };
       script.onerror = () => {
-        console.error('[Olivia Video] Failed to load YouTube IFrame API script');
+        console.error('[MagicBlock Video] Failed to load YouTube IFrame API script');
       };
       document.body.appendChild(script);
     } else {
-      console.log('[Olivia Video] YouTube API already loaded, initializing player...');
+      console.log('[MagicBlock Video] YouTube API already loaded, initializing player...');
       loadYouTubeAPI();
     }
 
@@ -214,7 +214,7 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (!videoSrc) {
-      console.log('No video source provided. Set NEXT_PUBLIC_VIDEO_URL_ARCIUM in Vercel environment variables.');
+      console.log('No video source provided. Set NEXT_PUBLIC_VIDEO_URL_MB in Vercel environment variables.');
       return;
     }
 
@@ -307,10 +307,15 @@ export default function SignInPage() {
             href="/"
             className="flex items-center gap-2"
             tabIndex={-1}
-            title="Olivia | Privacy-First Prediction Markets"
+            title="MagicBlock | Privacy-First Prediction Markets"
           >
-            <Image src={'/Arcium Icon.png'} height={32} width={32} alt={'Arcium Icon'} />
-            <Image src={'/Arcium logo.png'} height={32} width={120} alt={'Arcium Logo'} />
+            <Image 
+              src={'/Magic Block.png'} 
+              height={40} 
+              width={120} 
+              alt={'MagicBlock Logo'}
+              style={{ objectFit: 'contain' }}
+            />
           </Link>
         </nav>
       </header>
@@ -341,7 +346,7 @@ export default function SignInPage() {
                     borderRadius: '24px',
                     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
                   }}
-                  title="Olivia Pitch Video"
+                  title="MagicBlock Video"
                 />
               ) : (
                 <video
@@ -371,10 +376,10 @@ export default function SignInPage() {
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-3xl" style={{ borderRadius: '24px' }}>
                 <div className="text-center text-white p-6 max-w-md">
-                  <p className="text-2xl mb-4 font-semibold">Pitch Video</p>
+                  <p className="text-2xl mb-4 font-semibold">MagicBlock Video</p>
                   <p className="text-lg mb-2">Video will be available shortly</p>
                   <p className="text-sm text-gray-300">
-                    Our pitch video is being finalized and will appear here soon. Please check back later.
+                    Our MagicBlock video is being finalized and will appear here soon. Please check back later.
                   </p>
                 </div>
               </div>
@@ -382,10 +387,10 @@ export default function SignInPage() {
             {videoError && !isYouTube && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-3xl" style={{ borderRadius: '24px' }}>
                 <div className="text-center text-white p-6 max-w-md">
-                  <p className="text-2xl mb-4 font-semibold">Pitch Video</p>
+                  <p className="text-2xl mb-4 font-semibold">MagicBlock Video</p>
                   <p className="text-lg mb-2">Video will be available shortly</p>
                   <p className="text-sm text-gray-300">
-                    Our pitch video is being finalized and will appear here soon. Please check back later.
+                    Our MagicBlock video is being finalized and will appear here soon. Please check back later.
                   </p>
                 </div>
               </div>
@@ -432,3 +437,4 @@ export default function SignInPage() {
     </div>
   );
 }
+
