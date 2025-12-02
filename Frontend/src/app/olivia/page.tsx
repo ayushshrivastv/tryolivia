@@ -35,10 +35,18 @@ export default function SignInPage() {
   useEffect(() => {
     setIsMounted(true);
     const videoUrl = process.env.NEXT_PUBLIC_VIDEO_URL || '';
+    console.log('[Olivia Video] Environment variable:', videoUrl ? 'Set' : 'Missing');
+    console.log('[Olivia Video] Video URL:', videoUrl || 'Not configured');
+    
+    if (!videoUrl) {
+      console.warn('[Olivia Video] NEXT_PUBLIC_VIDEO_URL is not set. Please configure it in Vercel environment variables.');
+    }
+    
     setVideoSrc(videoUrl);
     // Start playing immediately if video is available (no delay)
     if (videoUrl) {
       setAutoPlayStarted(true);
+      console.log('[Olivia Video] Auto-play started for:', videoUrl);
     }
   }, []);
 
@@ -64,16 +72,39 @@ export default function SignInPage() {
     }
   }, [videoSrc, isYouTube]);
 
-  // Initialize YouTube IFrame API - only after 4 second delay
+  // Initialize YouTube IFrame API
   useEffect(() => {
-    if (!isYouTube || !youtubeVideoId || !autoPlayStarted) return;
+    if (!isYouTube || !youtubeVideoId || !autoPlayStarted) {
+      if (!isYouTube) console.log('[Olivia Video] Not a YouTube URL');
+      if (!youtubeVideoId) console.log('[Olivia Video] YouTube video ID not extracted yet');
+      if (!autoPlayStarted) console.log('[Olivia Video] Auto-play not started yet');
+      return;
+    }
+
+    console.log('[Olivia Video] Initializing YouTube player for video ID:', youtubeVideoId);
 
     const loadYouTubeAPI = () => {
-      if (window.YT && window.YT.Player && youtubePlayerRef.current && !youtubePlayer) {
-        try {
-          // Create YouTube player - API will create iframe for us
-          // Video will start immediately with autoplay
-          const player = new window.YT.Player(youtubePlayerRef.current, {
+      if (!window.YT || !window.YT.Player) {
+        console.warn('[Olivia Video] YouTube API not loaded yet');
+        return;
+      }
+      
+      if (!youtubePlayerRef.current) {
+        console.warn('[Olivia Video] YouTube player container not found');
+        return;
+      }
+      
+      if (youtubePlayer) {
+        console.log('[Olivia Video] YouTube player already initialized');
+        return;
+      }
+      
+      console.log('[Olivia Video] Creating YouTube player...');
+      
+      try {
+        // Create YouTube player - API will create iframe for us
+        // Video will start immediately with autoplay
+        const player = new window.YT.Player(youtubePlayerRef.current, {
             videoId: youtubeVideoId,
             playerVars: {
               autoplay: 1, // Start playing immediately
@@ -86,23 +117,23 @@ export default function SignInPage() {
             },
             events: {
               onReady: (event: any) => {
-                console.log('YouTube player ready');
+                console.log('[Olivia Video] YouTube player ready');
                 // Set quality: try 1440p60 first, fallback to 1080p
                 try {
                   const qualityLevels = event.target.getAvailableQualityLevels();
-                  console.log('Available qualities:', qualityLevels);
+                  console.log('[Olivia Video] Available qualities:', qualityLevels);
                   
                   // Try to set 1440p60 (hd1440) first, then 1080p (hd1080)
                   if (qualityLevels.includes('hd1440')) {
                     event.target.setPlaybackQuality('hd1440');
-                    console.log('Set quality to 1440p60');
+                    console.log('[Olivia Video] Set quality to 1440p60');
                   } else if (qualityLevels.includes('hd1080')) {
                     event.target.setPlaybackQuality('hd1080');
-                    console.log('Set quality to 1080p');
+                    console.log('[Olivia Video] Set quality to 1080p');
                   } else if (qualityLevels.length > 0) {
                     // Fallback to highest available
                     event.target.setPlaybackQuality(qualityLevels[0]);
-                    console.log('Set quality to highest available:', qualityLevels[0]);
+                    console.log('[Olivia Video] Set quality to highest available:', qualityLevels[0]);
                   }
                   // Video should already be playing with autoplay: 1, but ensure playback after quality change
                   try {
@@ -131,29 +162,40 @@ export default function SignInPage() {
             },
           });
           setYoutubePlayer(player);
+          console.log('[Olivia Video] YouTube player created successfully');
         } catch (error) {
-          console.error('Error creating YouTube player:', error);
+          console.error('[Olivia Video] Error creating YouTube player:', error);
         }
-      }
     };
 
     // Load YouTube API script if not already loaded
     if (!window.YT) {
+      console.log('[Olivia Video] Loading YouTube IFrame API...');
+      // Set up the callback before loading the script
+      window.onYouTubeIframeAPIReady = () => {
+        console.log('[Olivia Video] YouTube API ready callback called');
+        loadYouTubeAPI();
+      };
+      
       const script = document.createElement('script');
       script.src = 'https://www.youtube.com/iframe_api';
       script.async = true;
       script.onload = () => {
-        // YouTube API will call this when ready
-        window.onYouTubeIframeAPIReady = () => {
-          loadYouTubeAPI();
-        };
-        // If API is already loaded, call directly
-        if (window.YT && window.YT.Player) {
-          loadYouTubeAPI();
-        }
+        console.log('[Olivia Video] YouTube API script loaded');
+        // The API might be ready immediately, check after a short delay
+        setTimeout(() => {
+          if (window.YT && window.YT.Player && !youtubePlayer) {
+            console.log('[Olivia Video] YouTube API available, loading player...');
+            loadYouTubeAPI();
+          }
+        }, 100);
+      };
+      script.onerror = () => {
+        console.error('[Olivia Video] Failed to load YouTube IFrame API script');
       };
       document.body.appendChild(script);
     } else {
+      console.log('[Olivia Video] YouTube API already loaded, initializing player...');
       loadYouTubeAPI();
     }
 
