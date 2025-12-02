@@ -35,6 +35,8 @@ export default function SignInPage() {
               controls
               autoPlay
               loop
+              muted
+              playsInline
               className="w-full h-auto rounded-3xl shadow-2xl"
               style={{
                 borderRadius: '24px',
