@@ -51,7 +51,7 @@ interface Window {
     removeListener: (event: string, callback: (args: unknown) => void) => void;
   };
   YT?: {
-    Player: new (element: HTMLElement, config: any) => any;
+    Player: new (element: HTMLElement, config: YTPlayerConfig) => YTPlayer;
     PlayerState: {
       UNSTARTED: number;
       ENDED: number;
@@ -62,5 +62,39 @@ interface Window {
     };
   };
   onYouTubeIframeAPIReady?: () => void;
+}
+
+interface YTPlayerConfig {
+  videoId: string;
+  playerVars?: {
+    autoplay?: number;
+    mute?: number;
+    loop?: number;
+    playlist?: string;
+    controls?: number;
+    modestbranding?: number;
+    enablejsapi?: number;
+  };
+  events?: {
+    onReady?: (event: YTOnReadyEvent) => void;
+    onStateChange?: (event: YTOnStateChangeEvent) => void;
+  };
+}
+
+interface YTPlayer {
+  destroy: () => void;
+  playVideo: () => void;
+  pauseVideo: () => void;
+  getAvailableQualityLevels: () => string[];
+  setPlaybackQuality: (quality: string) => void;
+}
+
+interface YTOnReadyEvent {
+  target: YTPlayer;
+}
+
+interface YTOnStateChangeEvent {
+  data: number;
+  target: YTPlayer;
 }
 

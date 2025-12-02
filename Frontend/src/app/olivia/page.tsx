@@ -27,9 +27,8 @@ export default function SignInPage() {
   // Check if URL is YouTube
   const isYouTube = videoSrc.includes('youtube.com') || videoSrc.includes('youtu.be');
   
-  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState<string>('');
   const [youtubeVideoId, setYoutubeVideoId] = useState<string>('');
-  const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
+  const [youtubePlayer, setYoutubePlayer] = useState<YTPlayer | null>(null);
 
   // Set video source after mount to avoid hydration mismatch
   useEffect(() => {
@@ -64,10 +63,8 @@ export default function SignInPage() {
       
       if (videoId) {
         setYoutubeVideoId(videoId);
-        // Don't set embed URL yet - wait for 4 seconds
       }
     } else {
-      setYoutubeEmbedUrl('');
       setYoutubeVideoId('');
     }
   }, [videoSrc, isYouTube]);
@@ -81,6 +78,12 @@ export default function SignInPage() {
       return;
     }
 
+    // Don't reinitialize if player already exists
+    if (youtubePlayer) {
+      console.log('[Olivia Video] YouTube player already initialized');
+      return;
+    }
+
     console.log('[Olivia Video] Initializing YouTube player for video ID:', youtubeVideoId);
 
     const loadYouTubeAPI = () => {
@@ -91,11 +94,6 @@ export default function SignInPage() {
       
       if (!youtubePlayerRef.current) {
         console.warn('[Olivia Video] YouTube player container not found');
-        return;
-      }
-      
-      if (youtubePlayer) {
-        console.log('[Olivia Video] YouTube player already initialized');
         return;
       }
       
@@ -116,7 +114,7 @@ export default function SignInPage() {
               enablejsapi: 1,
             },
             events: {
-              onReady: (event: any) => {
+              onReady: (event: YTOnReadyEvent) => {
                 console.log('[Olivia Video] YouTube player ready');
                 // Set quality: try 1440p60 first, fallback to 1080p
                 try {
@@ -151,7 +149,7 @@ export default function SignInPage() {
                   }
                 }
               },
-              onStateChange: (event: any) => {
+              onStateChange: (event: YTOnStateChangeEvent) => {
                 if (window.YT && event.data === window.YT.PlayerState.PLAYING) {
                   setIsPlaying(true);
                   setShowPlayButton(false);
@@ -200,15 +198,18 @@ export default function SignInPage() {
     }
 
     return () => {
-      if (youtubePlayer) {
-        try {
-          youtubePlayer.destroy();
-          setYoutubePlayer(null);
-        } catch (error) {
-          console.warn('Error destroying player:', error);
+      setYoutubePlayer((currentPlayer) => {
+        if (currentPlayer) {
+          try {
+            currentPlayer.destroy();
+          } catch (error) {
+            console.warn('Error destroying player:', error);
+          }
         }
-      }
+        return null;
+      });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isYouTube, youtubeVideoId, autoPlayStarted]);
 
   useEffect(() => {
