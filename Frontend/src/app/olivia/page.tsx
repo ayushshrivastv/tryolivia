@@ -29,7 +29,7 @@ export default function SignInPage() {
 
       <div className="hide-scrollbar min-h-[calc(100vh-7rem)]">
         <div className="flex h-full w-full items-center justify-center">
-          <div className="w-full max-w-6xl px-4">
+          <div className="w-full max-w-5xl px-4">
             <video
               src="/Arcium Clip 1 .mp4"
               controls
@@ -37,8 +37,12 @@ export default function SignInPage() {
               loop
               muted
               playsInline
-              className="w-full h-auto rounded-3xl shadow-2xl"
+              className="w-full rounded-3xl shadow-2xl"
               style={{
+                width: '100%',
+                maxWidth: '1280px',
+                height: 'auto',
+                aspectRatio: '16/9',
                 borderRadius: '24px',
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
               }}
