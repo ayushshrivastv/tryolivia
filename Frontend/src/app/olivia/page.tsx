@@ -7,10 +7,22 @@
 
 'use client';
 
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function SignInPage() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.play().catch((error) => {
+        console.log('Autoplay prevented:', error);
+      });
+    }
+  }, []);
+
   return (
     <div className="grid w-screen min-h-screen max-w-[1600px] gap-4 self-center bg-background px-6 lg:px-20">
       <header className="h-[4.5rem] grid w-full items-center bg-background">
@@ -31,12 +43,14 @@ export default function SignInPage() {
         <div className="flex h-full w-full items-center justify-center">
           <div className="w-full max-w-5xl px-4">
             <video
+              ref={videoRef}
               src="/Arcium Clip 1 .mp4"
               controls
               autoPlay
               loop
               muted
               playsInline
+              preload="auto"
               className="w-full rounded-3xl shadow-2xl"
               style={{
                 width: '100%',
