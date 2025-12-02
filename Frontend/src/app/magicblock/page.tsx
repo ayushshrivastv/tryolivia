@@ -311,8 +311,8 @@ export default function MagicBlockPage() {
           >
             <Image 
               src={'/Magic Block.png'} 
-              height={40} 
-              width={120} 
+              height={48} 
+              width={150} 
               alt={'MagicBlock Logo'}
               style={{ objectFit: 'contain' }}
             />
