@@ -101,7 +101,7 @@ async function initMXE() {
   // Get all required account addresses
   const mempoolAddress = getMempoolAccAddress(programId);
   const execpoolAddress = getExecutingPoolAccAddress(programId);
-  const clusterAddress = getClusterAccAddress(0); // Use cluster 0
+  const clusterAddress = getClusterAccAddress(1078779259); // Use devnet cluster offset
   
   // Get MXE keygen computation definition address (offset 1 = 0x01000000)
   const mxeKeygenCompDefOffset = Buffer.alloc(4);
@@ -136,7 +136,7 @@ async function initMXE() {
     console.log("Using mempoolSize: tiny");
     
     const sig = await arciumProgram.methods
-      .initMxe(0, { tiny: {} }) // clusterOffset = 0, mempoolSize = tiny
+      .initMxe(1078779259, { tiny: {} }) // clusterOffset = 1078779259 (devnet), mempoolSize = tiny
       .accounts(accountsObj)
       .rpc({ commitment: "confirmed" });
 
