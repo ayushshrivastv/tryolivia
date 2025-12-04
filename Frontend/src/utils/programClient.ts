@@ -10,10 +10,10 @@ import { AnchorProvider, Program, Wallet, Idl, BN } from "@coral-xyz/anchor";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
 // Program ID is read from env for flexibility across clusters.
-// Fallback uses the documented Devnet deployment.
+// Fallback uses the current program deployment.
 const PROGRAM_ID_STR =
   process.env.NEXT_PUBLIC_PREDICTION_MARKET_PROGRAM_ID ||
-  "3aGW1X9fXUxFGozGp2F63jAFq3nvWiZdTFWKdTWijsET";
+  "EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA";
 
 export const PREDICTION_MARKET_PROGRAM_ID = new PublicKey(PROGRAM_ID_STR);
 
@@ -118,7 +118,7 @@ export function getBetPDA(
   const marketIdBN = typeof marketId === "number" || typeof marketId === "string"
     ? new BN(marketId)
     : marketId;
-  
+
   const marketIdBuffer = bigintToEightBytesLE(BigInt(marketIdBN.toString()));
 
   const [pda] = PublicKey.findProgramAddressSync(
@@ -126,6 +126,27 @@ export function getBetPDA(
       Buffer.from("bet"),
       marketIdBuffer,
       bettor.toBuffer(),
+    ],
+    PREDICTION_MARKET_PROGRAM_ID
+  );
+
+  return pda;
+}
+
+/**
+ * Get market vault PDA for holding bet funds
+ */
+export function getMarketVaultPDA(marketId: BN | number | string): PublicKey {
+  const marketIdBN = typeof marketId === "number" || typeof marketId === "string"
+    ? new BN(marketId)
+    : marketId;
+
+  const marketIdBuffer = bigintToEightBytesLE(BigInt(marketIdBN.toString()));
+
+  const [pda] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("vault"),
+      marketIdBuffer,
     ],
     PREDICTION_MARKET_PROGRAM_ID
   );
