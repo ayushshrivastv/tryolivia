@@ -12,7 +12,7 @@ const COMP_DEF_OFFSET_INITIALIZE_MARKET: u32 = comp_def_offset("initialize_marke
 const COMP_DEF_OFFSET_PLACE_BET: u32 = comp_def_offset("place_bet");
 const COMP_DEF_OFFSET_DISTRIBUTE_REWARDS: u32 = comp_def_offset("distribute_rewards");
 
-declare_id!("3aGW1X9fXUxFGozGp2F63jAFq3nvWiZdTFWKdTWijsET");
+declare_id!("EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA");
 
 #[account]
 pub struct SignerAccount {
@@ -144,6 +144,13 @@ pub mod prediction_market {
         );
         require!(amount > 0, ErrorCode::InvalidBetAmount);
 
+        // Transfer SOL from bettor to market vault
+        let bettor = &ctx.accounts.bettor;
+        let market_vault = &ctx.accounts.market_vault;
+
+        **bettor.to_account_info().try_borrow_mut_lamports()? -= amount;
+        **market_vault.to_account_info().try_borrow_mut_lamports()? += amount;
+
         market.total_bets += amount;
 
         let args = vec![
@@ -172,6 +179,7 @@ pub mod prediction_market {
         bet.timestamp = Clock::get()?.unix_timestamp;
         bet.resolved = false;
         bet.payout_amount = 0;
+        bet.withdrawn = false;
 
         emit!(BetPlacedEvent {
             market_id,
@@ -188,15 +196,17 @@ pub mod prediction_market {
         ctx: Context<PlaceBetCallback>,
         output: ComputationOutputs<PlaceBetOutput>,
     ) -> Result<()> {
-        let _o = match output {
+        let pool_update = match output {
             ComputationOutputs::Success(PlaceBetOutput { field_0 }) => field_0,
             _ => return Err(ErrorCode::AbortedComputation.into()),
         };
 
         let market = &mut ctx.accounts.market;
 
-        market.yes_pool += 0;
-        market.no_pool += 0;
+        // Update pools with deltas from encrypted computation
+        // field_0 = yes_pool_delta, field_1 = no_pool_delta from PoolUpdate struct
+        market.yes_pool += pool_update.field_0;
+        market.no_pool += pool_update.field_1;
 
         Ok(())
     }
@@ -290,6 +300,41 @@ pub mod prediction_market {
             bet_amount: bet.amount,
             payout_amount: result.field_0,
             won: result.field_1,
+        });
+
+        Ok(())
+    }
+
+    pub fn withdraw_payout(
+        ctx: Context<WithdrawPayout>,
+        _market_id: u64,
+    ) -> Result<()> {
+        let bet = &mut ctx.accounts.bet;
+
+        require!(bet.resolved, ErrorCode::BetNotResolved);
+        require!(!bet.withdrawn, ErrorCode::AlreadyWithdrawn);
+        require!(bet.payout_amount > 0, ErrorCode::NoPayout);
+
+        // Transfer SOL from market vault to bettor
+        let market_vault = &mut ctx.accounts.market_vault;
+        let bettor = &mut ctx.accounts.bettor;
+
+        let market_id_bytes = ctx.accounts.market.market_id.to_le_bytes();
+        let _seeds = &[
+            b"vault",
+            market_id_bytes.as_ref(),
+            &[ctx.bumps.market_vault],
+        ];
+
+        **market_vault.to_account_info().try_borrow_mut_lamports()? -= bet.payout_amount;
+        **bettor.to_account_info().try_borrow_mut_lamports()? += bet.payout_amount;
+
+        bet.withdrawn = true;
+
+        emit!(PayoutWithdrawnEvent {
+            market_id: bet.market_id,
+            bettor: bet.bettor,
+            payout_amount: bet.payout_amount,
         });
 
         Ok(())
@@ -442,6 +487,13 @@ pub struct PlaceBet<'info> {
     )]
     pub market: Account<'info, PredictionMarket>,
     #[account(
+        mut,
+        seeds = [b"vault", market_id.to_le_bytes().as_ref()],
+        bump
+    )]
+    /// CHECK: Market vault PDA for holding bet funds
+    pub market_vault: SystemAccount<'info>,
+    #[account(
         init,
         payer = bettor,
         space = 8 + Bet::INIT_SPACE,
@@ -478,6 +530,33 @@ pub struct ResolveMarket<'info> {
         constraint = market.creator == authority.key() @ ErrorCode::UnauthorizedAccess
     )]
     pub market: Account<'info, PredictionMarket>,
+}
+
+#[derive(Accounts)]
+#[instruction(market_id: u64)]
+pub struct WithdrawPayout<'info> {
+    #[account(mut)]
+    pub bettor: Signer<'info>,
+    #[account(
+        seeds = [b"market", market_id.to_le_bytes().as_ref()],
+        bump = market.bump
+    )]
+    pub market: Account<'info, PredictionMarket>,
+    #[account(
+        mut,
+        seeds = [b"vault", market_id.to_le_bytes().as_ref()],
+        bump
+    )]
+    /// CHECK: Market vault PDA for holding bet funds
+    pub market_vault: SystemAccount<'info>,
+    #[account(
+        mut,
+        seeds = [b"bet", market_id.to_le_bytes().as_ref(), bettor.key().as_ref()],
+        bump = bet.bump,
+        constraint = bet.bettor == bettor.key() @ ErrorCode::UnauthorizedAccess
+    )]
+    pub bet: Account<'info, Bet>,
+    pub system_program: Program<'info, System>,
 }
 
 #[queue_computation_accounts("distribute_rewards", bettor)]
@@ -672,6 +751,8 @@ pub struct Bet {
     pub resolved: bool,
 
     pub payout_amount: u64,
+
+    pub withdrawn: bool,
 }
 
 #[repr(u8)]
@@ -714,6 +795,13 @@ pub struct RewardsDistributedEvent {
     pub won: bool,
 }
 
+#[event]
+pub struct PayoutWithdrawnEvent {
+    pub market_id: u64,
+    pub bettor: Pubkey,
+    pub payout_amount: u64,
+}
+
 #[error_code]
 pub enum ErrorCode {
     #[msg("The computation was aborted")]
@@ -740,4 +828,10 @@ pub enum ErrorCode {
     BetAlreadyResolved,
     #[msg("Unauthorized access")]
     UnauthorizedAccess,
+    #[msg("Bet is not resolved yet")]
+    BetNotResolved,
+    #[msg("Payout already withdrawn")]
+    AlreadyWithdrawn,
+    #[msg("No payout available")]
+    NoPayout,
 }
