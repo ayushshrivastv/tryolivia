@@ -14,7 +14,7 @@ import { BN, Wallet, Idl, AnchorProvider, Program } from '@coral-xyz/anchor';
 import { Button } from '@/src/ui/Button';
 import { Input } from '@/src/ui/Input';
 import { ArrowDownIcon } from '@/src/components/Icons';
-import { Loader2, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, X, CheckCircle2, AlertCircle, ExternalLink, Copy, Check } from 'lucide-react';
 import Depth from '@/src/trade/Depth/Depth';
 import Image from 'next/image';
 import {
@@ -30,6 +30,7 @@ import {
   loadIdl,
   getMarketPDA,
   getBetPDA,
+  getMarketVaultPDA,
   PREDICTION_MARKET_PROGRAM_ID,
 } from '@/src/utils/programClient';
 import { waitForTransaction } from '@/src/utils/transactionUtils';
@@ -258,6 +259,8 @@ export default function SwapUI({ baseCurrency, quoteCurrency, marketId }: SwapUI
   const [loading, setLoading] = useState<boolean>(false);
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [showBetConfirmation, setShowBetConfirmation] = useState<boolean>(false);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [copiedSignature, setCopiedSignature] = useState<boolean>(false);
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatus>({
     status: 'idle',
     message: '',
@@ -388,7 +391,8 @@ export default function SwapUI({ baseCurrency, quoteCurrency, marketId }: SwapUI
         }
         setTransactionStatus({ status: 'success', message: 'Bet submitted', signature: sig });
         setShowBetConfirmation(false);
-        setTimeout(() => setTransactionStatus({ status: 'idle', message: '' }), 3000);
+        setShowSuccessModal(true);
+        setTimeout(() => setTransactionStatus({ status: 'idle', message: '' }), 5000);
         return;
       }
 
@@ -414,9 +418,10 @@ export default function SwapUI({ baseCurrency, quoteCurrency, marketId }: SwapUI
       // Generate computation offset ONCE for both market init and bet
       const computationOffset = generateComputationOffset();
 
-      // Get market and bet PDAs
+      // Get market, bet, and vault PDAs
       const marketPDA = getMarketPDA(derivedMarketId);
       const betPDA = getBetPDA(derivedMarketId, wallet.publicKey);
+      const marketVaultPDA = getMarketVaultPDA(derivedMarketId);
 
       // Get Arcium accounts for place_bet
       const clusterAccount2 = getClusterAccountOrThrow();
@@ -474,6 +479,7 @@ export default function SwapUI({ baseCurrency, quoteCurrency, marketId }: SwapUI
             arciumProgram: ARCIUM_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
             market: marketPDA,
+            marketVault: marketVaultPDA,
             bet: betPDA,
           })
           .transaction();
@@ -614,11 +620,14 @@ export default function SwapUI({ baseCurrency, quoteCurrency, marketId }: SwapUI
         signature: finalizeSig,
       });
 
+      // Show success modal
+      setShowSuccessModal(true);
+
       // Reset form after success
       setTimeout(() => {
         setAmount('');
         setTransactionStatus({ status: 'idle', message: '' });
-      }, 3000);
+      }, 5000);
     } catch (error) {
       console.error('Place bet error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -1089,6 +1098,131 @@ export default function SwapUI({ baseCurrency, quoteCurrency, marketId }: SwapUI
                   }}
                 >
                   Confirm Bet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && transactionStatus.signature && (
+        <div
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', zIndex: 9999 }}
+          onClick={() => setShowSuccessModal(false)}
+        >
+          <div
+            className="w-full max-w-2xl rounded-xl p-6 max-h-[90vh] overflow-y-auto"
+            style={{
+              backgroundColor: 'rgba(10, 10, 10, 0.95)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-6 w-6 text-green-500" />
+                <h2 className="text-2xl font-semibold text-white">Bet Placed Successfully</h2>
+              </div>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="text-white hover:opacity-70 transition-opacity"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Bet Details */}
+              <div className="space-y-4">
+                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-300">Market</span>
+                      <span className="text-white font-medium">
+                        {isNYCMayorMarket ? 'NYC Mayoral Election' : `${baseCurrency}/${quoteCurrency}`}
+                      </span>
+                    </div>
+
+                    {isNYCMayorMarket && selectedCandidate && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-300">Candidate</span>
+                        <span className="text-white font-medium">{selectedCandidate}</span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-300">Order Type</span>
+                      <span className="text-white font-medium">{orderType}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-300">Amount</span>
+                      <span className="text-white font-medium">{amount} SOL</span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-300">Status</span>
+                      <span className="text-green-500 font-medium flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Confirmed
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Transaction Verification */}
+              <div className="border-t border-white/10 pt-4">
+                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                  <p className="text-xs text-gray-300 mb-3">
+                    Your bet has been confirmed on the Solana blockchain. View the transaction details on Solscan.
+                  </p>
+
+                  <a
+                    href={`https://solscan.io/tx/${transactionStatus.signature}?cluster=${process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet'}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm transition-all duration-200"
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span className="text-white">View on Solscan</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex items-center justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowSuccessModal(false)}
+                  className="px-4 py-2 rounded-full text-sm transition-all duration-200 text-white"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  }}
+                >
+                  Close
                 </button>
               </div>
             </div>
