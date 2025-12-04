@@ -160,7 +160,7 @@ async function verifyInitialization() {
   console.log("\n=== Step 4: Verification ===\n");
   
   const connection = new Connection(CONNECTION_URL, "confirmed");
-  const programId = new PublicKey("AMgZmVhB17SVSQAbhTHaZzHPurArHaJ7zJeLdcwKRhE2");
+  const programId = new PublicKey("EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA");
   const mxeAddress = getMXEAccAddress(programId);
   
   try {
