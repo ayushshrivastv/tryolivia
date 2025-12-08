@@ -14,7 +14,7 @@ import { BN, Wallet, Idl, AnchorProvider, Program } from '@coral-xyz/anchor';
 import { Button } from '@/src/ui/Button';
 import { Input } from '@/src/ui/Input';
 import { ArrowDownIcon } from '@/src/components/Icons';
-import { Loader2, X, CheckCircle2, AlertCircle, ExternalLink, Copy, Check } from 'lucide-react';
+import { Loader2, X, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react';
 import Depth from '@/src/trade/Depth/Depth';
 import Image from 'next/image';
 import {
@@ -260,7 +260,6 @@ export default function SwapUI({ baseCurrency, quoteCurrency, marketId }: SwapUI
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [showBetConfirmation, setShowBetConfirmation] = useState<boolean>(false);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
-  const [copiedSignature, setCopiedSignature] = useState<boolean>(false);
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatus>({
     status: 'idle',
     message: '',

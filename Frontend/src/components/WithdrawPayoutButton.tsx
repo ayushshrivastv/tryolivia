@@ -9,8 +9,8 @@
 
 import { useState } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey, SystemProgram } from '@solana/web3.js';
-import { BN, Wallet, Idl, AnchorProvider, Program } from '@coral-xyz/anchor';
+import { SystemProgram } from '@solana/web3.js';
+import { BN, Wallet, Idl } from '@coral-xyz/anchor';
 import { Button } from '@/src/ui/Button';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import {
@@ -19,7 +19,6 @@ import {
   getBetPDA,
   getMarketPDA,
   getMarketVaultPDA,
-  PREDICTION_MARKET_PROGRAM_ID,
 } from '@/src/utils/programClient';
 import { waitForTransaction } from '@/src/utils/transactionUtils';
 
