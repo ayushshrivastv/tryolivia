@@ -25,3 +25,136 @@ When Others Watch Chaos.
 Predict Them. Profit From Them.
 
 Ayush Srivastava
+
+---
+
+## How Arcium Private Encryption Works
+
+### 1. Encrypt Prediction
+
+Generate keypair and encrypt prediction using x25519 with MXE public key:
+
+\`\`\`typescript
+import { x25519 } from "@noble/curves/ed25519";
+import { RescueCipher, getMXEPublicKey } from "@arcium-hq/client";
+import { randomBytes } from "crypto";
+
+// Generate encryption keypair
+const privateKey = x25519.utils.randomSecretKey();
+const publicKey = x25519.getPublicKey(privateKey);
+
+// Get MXE public key for encryption
+const mxePublicKey = await getMXEPublicKey(provider, programId);
+
+// Derive shared secret and create cipher
+const sharedSecret = x25519.getSharedSecret(privateKey, mxePublicKey);
+const cipher = new RescueCipher(sharedSecret);
+
+// Encrypt prediction (true = YES, false = NO)
+const prediction = true;
+const nonce = randomBytes(16);
+const encryptedPrediction = cipher.encrypt(
+  [BigInt(prediction ? 1 : 0)],
+  nonce
+);
+\`\`\`
+
+### 2. MPC Circuit for Encrypted Computation
+
+Arcium circuit defines the encrypted computation logic that runs on encrypted data:
+
+\`\`\`rust
+// Arcium/circuits/EncryptedIxs/src/lib.rs
+#[instruction]
+pub fn place_bet(
+    prediction_ctxt: Enc<Shared, bool>, 
+    amount: u64
+) -> PoolUpdate {
+    // Decrypt in MPC (no single node sees the value)
+    let prediction = prediction_ctxt.to_arcis();
+    
+    // Update pools without revealing individual predictions
+    PoolUpdate {
+        yes_pool_delta: if prediction { amount } else { 0 },
+        no_pool_delta: if !prediction { amount } else { 0 },
+    }
+    .reveal()
+}
+\`\`\`
+
+### 3. Queue Encrypted Computation
+
+Submit encrypted prediction to Arcium's computation queue (Arcium accounts required):
+
+\`\`\`typescript
+import {
+  getMXEAccAddress,
+  getComputationAccAddress,
+  getCompDefAccAddress,
+  getCompDefAccOffset,
+  getMempoolAccAddress,
+  getExecutingPoolAccAddress,
+  getClusterAccAddress,
+  awaitComputationFinalization,
+  deserializeLE,
+} from "@arcium-hq/client";
+import { randomBytes } from "crypto";
+
+const computationOffset = new anchor.BN(randomBytes(8), "hex");
+
+// Queue computation with Arcium accounts
+await program.methods
+  .placeBet(
+    computationOffset,
+    marketId,
+    betAmount,
+    Array.from(encryptedPrediction[0]),
+    Array.from(publicKey),
+    new anchor.BN(deserializeLE(nonce).toString())
+  )
+  .accountsPartial({
+    bettor: user.publicKey,
+    // Arcium accounts for encrypted computation
+    mxeAccount: getMXEAccAddress(programId),
+    computationAccount: getComputationAccAddress(programId, computationOffset),
+    compDefAccount: getCompDefAccAddress(
+      programId,
+      Buffer.from(getCompDefAccOffset("place_bet")).readUInt32LE()
+    ),
+    mempoolAccount: getMempoolAccAddress(programId),
+    executingPool: getExecutingPoolAccAddress(programId),
+    clusterAccount: getClusterAccAddress(clusterOffset),
+    market: marketPDA,
+    bet: betPDA,
+  })
+  .rpc();
+
+// Wait for computation to finalize
+await awaitComputationFinalization(provider, computationOffset, programId, "confirmed");
+\`\`\`
+
+### 4. Callback Receives Result
+
+Arcium callback receives computation result and updates market state:
+
+\`\`\`rust
+// Callback from Arcium after market resolution computation
+pub fn resolve_market_callback(
+    ctx: Context<ResolveMarketCallback>,
+    _market_id: u64,
+    outcome: bool,
+    yes_votes: u8,
+    no_votes: u8,
+) -> Result<()> {
+    let market = &mut ctx.accounts.market;
+    market.resolution_result = Some(outcome);
+    market.state = MarketState::Resolved;
+    Ok(())
+}
+\`\`\`
+
+**Note:** The current `place_bet` implementation is legacy and stores encrypted data directly. The Arcium circuit (`place_bet`) and integration pattern above represent the intended encrypted computation flow for processing predictions privately via MPC.
+
+---
+
+For detailed Arcium integration documentation, see [Arcium/README.md](Arcium/README.md).
