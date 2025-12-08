@@ -1,7 +1,7 @@
 #!/bin/bash
 # Setup script to ensure program ID matches declared ID
 
-DECLARED_ID="3aGW1X9fXUxFGozGp2F63jAFq3nvWiZdTFWKdTWijsET"
+DECLARED_ID="Eb8zo9c1YwtGw64C4TRcWxuPCBAVHVPUBUC7jcGNVWYJ"
 
 echo "Setting up program keypair for ID: $DECLARED_ID"
 
