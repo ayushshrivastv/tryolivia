@@ -154,3 +154,16 @@ export function getMarketVaultPDA(marketId: BN | number | string): PublicKey {
   return pda;
 }
 
+/**
+ * Get Sign PDA account (required for Arcium instructions)
+ * This PDA is derived with seed "SignerAccount"
+ */
+export function getSignPDA(): PublicKey {
+  const [pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("SignerAccount")],
+    PREDICTION_MARKET_PROGRAM_ID
+  );
+
+  return pda;
+}
+

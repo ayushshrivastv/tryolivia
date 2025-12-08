@@ -42,7 +42,7 @@ export function Footer() {
           </div>
 
           <div className="lg:col-span-1">
-            <h4 className="text-sm font-medium text-white mb-4" style={{ textShadow: '0 3px 8px rgba(0,0,0,1), 2px 2px 4px rgba(0,0,0,0.9)' }}>Learn</h4>
+            <h4 className="text-sm font-medium text-white mb-4" style={{ textShadow: '0 3px 8px rgba(0,0,0,1), 2px 2px 4px rgba(0,0,0,0.9)' }}>Portfolio</h4>
             <FooterLink href="/docs">Documentation</FooterLink>
             <FooterLink href="/blog">Blog</FooterLink>
           </div>

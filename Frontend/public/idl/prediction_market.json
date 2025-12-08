@@ -1,5 +1,5 @@
 {
-  "address": "3aGW1X9fXUxFGozGp2F63jAFq3nvWiZdTFWKdTWijsET",
+  "address": "EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA",
   "metadata": {
     "name": "prediction_market",
     "version": "0.1.0",
@@ -24,6 +24,32 @@
           "name": "creator",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "sign_pda_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114,
+                  65,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "mxe_account"
@@ -138,6 +164,32 @@
           "signer": true
         },
         {
+          "name": "sign_pda_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114,
+                  65,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
           "name": "mxe_account"
         },
         {
@@ -247,11 +299,6 @@
         54
       ],
       "accounts": [
-        {
-          "name": "bettor",
-          "writable": true,
-          "signer": true
-        },
         {
           "name": "arcium_program",
           "address": "BKck65TgoKRokMjQM3datB9oRwJ8rAj2jxPXvHXUvcL6"
@@ -414,11 +461,6 @@
       ],
       "accounts": [
         {
-          "name": "creator",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "arcium_program",
           "address": "BKck65TgoKRokMjQM3datB9oRwJ8rAj2jxPXvHXUvcL6"
         },
@@ -474,6 +516,32 @@
           "signer": true
         },
         {
+          "name": "sign_pda_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114,
+                  65,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
           "name": "mxe_account"
         },
         {
@@ -525,6 +593,28 @@
                   114,
                   107,
                   101,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "market_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
                   116
                 ]
               },
@@ -610,11 +700,6 @@
         62
       ],
       "accounts": [
-        {
-          "name": "bettor",
-          "writable": true,
-          "signer": true
-        },
         {
           "name": "arcium_program",
           "address": "BKck65TgoKRokMjQM3datB9oRwJ8rAj2jxPXvHXUvcL6"
@@ -702,6 +787,104 @@
         {
           "name": "outcome",
           "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "withdraw_payout",
+      "discriminator": [
+        114,
+        146,
+        48,
+        240,
+        49,
+        57,
+        108,
+        188
+      ],
+      "accounts": [
+        {
+          "name": "bettor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "market",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "market_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "market_id"
+              },
+              {
+                "kind": "account",
+                "path": "bettor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "_market_id",
+          "type": "u64"
         }
       ]
     }
@@ -797,6 +980,19 @@
         51,
         58
       ]
+    },
+    {
+      "name": "SignerAccount",
+      "discriminator": [
+        127,
+        212,
+        7,
+        180,
+        17,
+        50,
+        249,
+        193
+      ]
     }
   ],
   "events": [
@@ -837,6 +1033,19 @@
         159,
         14,
         156
+      ]
+    },
+    {
+      "name": "PayoutWithdrawnEvent",
+      "discriminator": [
+        60,
+        3,
+        254,
+        173,
+        109,
+        221,
+        63,
+        219
       ]
     },
     {
@@ -913,6 +1122,21 @@
       "code": 6011,
       "name": "UnauthorizedAccess",
       "msg": "Unauthorized access"
+    },
+    {
+      "code": 6012,
+      "name": "BetNotResolved",
+      "msg": "Bet is not resolved yet"
+    },
+    {
+      "code": 6013,
+      "name": "AlreadyWithdrawn",
+      "msg": "Payout already withdrawn"
+    },
+    {
+      "code": 6014,
+      "name": "NoPayout",
+      "msg": "No payout available"
     }
   ],
   "types": [
@@ -994,6 +1218,10 @@
           {
             "name": "payout_amount",
             "type": "u64"
+          },
+          {
+            "name": "withdrawn",
+            "type": "bool"
           }
         ]
       }
@@ -1243,15 +1471,6 @@
               "defined": {
                 "name": "ComputationSignature"
               }
-            }
-          },
-          {
-            "name": "callback_discriminator",
-            "type": {
-              "array": [
-                "u8",
-                8
-              ]
             }
           }
         ]
@@ -1714,6 +1933,26 @@
       }
     },
     {
+      "name": "PayoutWithdrawnEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market_id",
+            "type": "u64"
+          },
+          {
+            "name": "bettor",
+            "type": "pubkey"
+          },
+          {
+            "name": "payout_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "PlaceBetOutput",
       "docs": [
         "The output of the callback instruction. Provided as a struct with ordered fields",
@@ -1853,6 +2092,18 @@
           {
             "name": "won",
             "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SignerAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }

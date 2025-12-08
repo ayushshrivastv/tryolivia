@@ -244,8 +244,91 @@ export async function checkTransactionStatusWithFallback(
     console.log('Transaction signature:', signature);
     const cluster = process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'testnet';
     console.log('Check manually at:', `https://explorer.solana.com/tx/${signature}?cluster=${cluster}`);
-    
+
     // Return not_found to continue polling rather than failing immediately
     return { status: "not_found" };
+  }
+}
+
+/**
+ * Simulate transaction before sending to catch errors early
+ * This is especially important for Arcium transactions which can be expensive
+ *
+ * NOTE: For newer Solana web3.js versions, we need to handle the transaction format carefully
+ */
+export async function simulateTransaction(
+  connection: Connection,
+  transaction: any,
+  signers?: any[],
+  commitment: Commitment = "confirmed"
+): Promise<{
+  success: boolean;
+  error?: string;
+  logs?: string[];
+}> {
+  try {
+    console.log('🔍 Simulating transaction before sending...');
+
+    // For simulation, we need to ensure the transaction has the right structure
+    // Try different simulation approaches based on transaction type
+
+    let simulation;
+
+    try {
+      // Approach 1: Try with replaceRecentBlockhash (works with modern Transaction objects)
+      if (transaction.recentBlockhash && transaction.feePayer) {
+        simulation = await connection.simulateTransaction(
+          transaction,
+          signers,
+          {
+            commitment,
+            replaceRecentBlockhash: true, // Use fresh blockhash for simulation
+          }
+        );
+      } else {
+        // Approach 2: Standard simulation
+        simulation = await connection.simulateTransaction(transaction, {
+          commitment,
+        });
+      }
+    } catch (simError: any) {
+      // If simulation fails due to format issues, just skip it and let the actual transaction run
+      console.warn('⚠️ Transaction simulation skipped due to format issue:', simError.message);
+      console.log('Transaction will be sent without pre-validation');
+      return {
+        success: true, // Return success to allow transaction to proceed
+        logs: [],
+      };
+    }
+
+    if (simulation.value.err) {
+      const errorStr = JSON.stringify(simulation.value.err);
+      console.error('❌ Transaction simulation failed:', errorStr);
+      console.error('Simulation logs:', simulation.value.logs);
+
+      return {
+        success: false,
+        error: errorStr,
+        logs: simulation.value.logs || [],
+      };
+    }
+
+    console.log('✅ Transaction simulation successful');
+    if (simulation.value.logs && simulation.value.logs.length > 0) {
+      console.log('Simulation logs:', simulation.value.logs.slice(-5)); // Last 5 logs
+    }
+
+    return {
+      success: true,
+      logs: simulation.value.logs || [],
+    };
+  } catch (error) {
+    console.error('Simulation error:', error);
+    // Don't block the transaction if simulation fails for technical reasons
+    console.log('⚠️ Skipping simulation, will attempt actual transaction');
+    return {
+      success: true, // Allow transaction to proceed
+      logs: [],
+    };
   }
 }

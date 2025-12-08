@@ -8,7 +8,7 @@
 'use client';
 
 import { FloatingNav } from '@/src/ui/FloatingNavbar';
-import { IconCurrencyBitcoin, IconTrophy, IconBook, IconNews, IconHome } from '@tabler/icons-react';
+import { IconCurrencyBitcoin, IconTrophy, IconBriefcase, IconNews, IconHome } from '@tabler/icons-react';
 import { WalletButton } from '@/src/components/WalletButton';
 
 export function Navbar() {
@@ -29,14 +29,14 @@ export function Navbar() {
       icon: <IconTrophy className="h-4 w-4 text-white" />,
     },
     {
-      name: "Learn",
-      link: "/learn",
-      icon: <IconBook className="h-4 w-4 text-white" />,
-    },
-    {
       name: "News",
       link: "/news",
       icon: <IconNews className="h-4 w-4 text-white" />,
+    },
+    {
+      name: "Portfolio",
+      link: "/learn",
+      icon: <IconBriefcase className="h-4 w-4 text-white" />,
     },
   ];
 

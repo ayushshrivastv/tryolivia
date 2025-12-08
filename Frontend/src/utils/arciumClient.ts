@@ -78,6 +78,23 @@ export const ARCIUM_PROGRAM_ID = NETWORK === 'testnet'
   : DEVNET_ARCIUM_PROGRAM_ID;
 
 /**
+ * Detect network from connection RPC URL
+ */
+function detectNetworkFromConnection(connectionUrl: string): string {
+  const url = connectionUrl.toLowerCase();
+  if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes(':8899')) {
+    return 'localnet';
+  } else if (url.includes('devnet') || url.includes('api.devnet.solana.com')) {
+    return 'devnet';
+  } else if (url.includes('testnet') || url.includes('api.testnet.solana.com')) {
+    return 'testnet';
+  } else if (url.includes('mainnet') || url.includes('api.mainnet-beta.solana.com')) {
+    return 'mainnet-beta';
+  }
+  return NETWORK; // Fallback to env var
+}
+
+/**
  * Get MXE public key with retry logic
  */
 export async function getMXEPublicKeyWithRetry(
@@ -88,16 +105,21 @@ export async function getMXEPublicKeyWithRetry(
 ): Promise<Uint8Array> {
   // Derive the MXE account address from our program ID
   const mxeAccount = getMXEAccAddress(programId);
+  
+  // Detect actual network from connection URL (more reliable than env var)
+  const actualNetwork = detectNetworkFromConnection(provider.connection.rpcEndpoint);
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Attempt ${attempt}: Reading MXE account data from ${mxeAccount.toString()}`);
+      console.log(`Connection RPC: ${provider.connection.rpcEndpoint}`);
+      console.log(`Detected network: ${actualNetwork}`);
 
       // Get the account info directly
       const accountInfo = await provider.connection.getAccountInfo(mxeAccount);
 
       if (!accountInfo) {
-        throw new Error(`MXE account ${mxeAccount.toString()} does not exist on ${NETWORK}`);
+        throw new Error(`MXE account ${mxeAccount.toString()} does not exist on ${actualNetwork}`);
       }
 
       if (accountInfo.data.length === 0) {
@@ -106,20 +128,53 @@ export async function getMXEPublicKeyWithRetry(
 
       console.log(`MXE account found with ${accountInfo.data.length} bytes of data`);
       console.log(`Account owner: ${accountInfo.owner.toString()}`);
-      console.log(`First 32 bytes:`, Array.from(accountInfo.data.slice(0, 32)));
-
-      // The MXE public key should be stored in the account data
-      // Based on Arcium's structure, it's likely the first 32 bytes after some header
-      // Let's try different offsets to find the 32-byte public key
-
-      if (accountInfo.data.length >= 32) {
-        // Try the first 32 bytes (offset 0)
-        const mxePublicKey = accountInfo.data.slice(0, 32);
-        console.log("Extracted MXE public key (offset 0):", Array.from(mxePublicKey));
-        return mxePublicKey;
+      
+      // Anchor accounts have an 8-byte discriminator prefix
+      // Try both offset 0 and offset 8 for the 32-byte x25519 public key
+      const requiredLength = 40; // 8-byte discriminator + 32-byte public key
+      
+      if (accountInfo.data.length < 32) {
+        throw new Error(`MXE account data is too short (${accountInfo.data.length} bytes), expected at least 32 bytes`);
       }
 
-      throw new Error(`MXE account data is too short (${accountInfo.data.length} bytes), expected at least 32 bytes`);
+      // Log first 40 bytes for debugging
+      console.log(`First 40 bytes:`, Array.from(accountInfo.data.slice(0, 40)));
+
+      // Try offset 0 first (in case no discriminator)
+      if (accountInfo.data.length >= 32) {
+        const mxePublicKeyOffset0 = accountInfo.data.slice(0, 32);
+        console.log("Extracted MXE public key (offset 0):", Array.from(mxePublicKeyOffset0));
+        
+        // Validate: x25519 public keys shouldn't be all zeros
+        const isAllZeros = mxePublicKeyOffset0.every(byte => byte === 0);
+        if (!isAllZeros) {
+          return mxePublicKeyOffset0;
+        }
+      }
+
+      // Try offset 8 (after Anchor discriminator)
+      if (accountInfo.data.length >= requiredLength) {
+        const mxePublicKeyOffset8 = accountInfo.data.slice(8, 40);
+        console.log("Extracted MXE public key (offset 8):", Array.from(mxePublicKeyOffset8));
+        
+        // Validate: x25519 public keys shouldn't be all zeros
+        const isAllZeros = mxePublicKeyOffset8.every(byte => byte === 0);
+        if (!isAllZeros) {
+          return mxePublicKeyOffset8;
+        }
+      }
+
+      // If both offsets are all zeros, try to find non-zero 32-byte chunk
+      for (let offset = 0; offset <= Math.min(16, accountInfo.data.length - 32); offset++) {
+        const candidate = accountInfo.data.slice(offset, offset + 32);
+        const isAllZeros = candidate.every(byte => byte === 0);
+        if (!isAllZeros) {
+          console.log(`Found non-zero 32-byte chunk at offset ${offset}:`, Array.from(candidate));
+          return candidate;
+        }
+      }
+
+      throw new Error(`Could not find valid MXE public key in account data. Data length: ${accountInfo.data.length} bytes`);
 
     } catch (error) {
       console.log(`Attempt ${attempt} failed:`, error);

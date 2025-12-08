@@ -27,6 +27,8 @@ export default function TradeHeader({
   const [price, setPrice] = useState<string>('');
   const [priceChange, setPriceChange] = useState<number>(0);
   const [prevPrice, setPrevPrice] = useState<number | null>(null);
+  const [animatedPercentage, setAnimatedPercentage] = useState<number>(88.8);
+  const [animatedUsd, setAnimatedUsd] = useState<number>(600);
 
   useEffect(() => {
     const getTickerData = async () => {
@@ -68,6 +70,30 @@ export default function TradeHeader({
     };
   }, [market, room, prevPrice]);
 
+  // Continuously update percentage (88% to 92%) for NYC Mayor market
+  useEffect(() => {
+    if (!isNYCMayorMarket) return;
+
+    const interval = setInterval(() => {
+      // Generate a random value between 88 and 92
+      const randomPercentage = 88 + (Math.random() * 4); // 88 to 92
+      setAnimatedPercentage(randomPercentage);
+    }, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, [isNYCMayorMarket]);
+
+  // Continuously update USD value ($600 to $800)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Generate a random value between 600 and 800
+      const randomUsd = 600 + (Math.random() * 200); // 600 to 800
+      setAnimatedUsd(randomUsd);
+    }, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-border/20">
       <div className="flex items-center">
@@ -85,11 +111,11 @@ export default function TradeHeader({
           <div>
             <div className="text-xl font-bold">
               {isNYCMayorMarket 
-                ? '88.8%' // Zohran Mamdani's percentage for NYC Mayor market
+                ? `${animatedPercentage.toFixed(1)}%`
                 : `${(parseFloat(price) * 100).toFixed(2)}%`}
             </div>
 
-            <div className="text-xs text-green-500">${priceChange}</div>
+            <div className="text-xs text-green-500">{`$${animatedUsd.toFixed(2)}`}</div>
           </div>
         </div>
       </div>

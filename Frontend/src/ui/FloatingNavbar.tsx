@@ -6,7 +6,7 @@
  */
 
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -23,7 +23,31 @@ export const FloatingNav = ({
   className?: string;
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show navbar at the top of the page
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      }
+      // Hide navbar when scrolling down, show when scrolling up
+      else if (currentScrollY > lastScrollY) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   return (
     <AnimatePresence mode="wait">
@@ -33,11 +57,14 @@ export const FloatingNav = ({
           y: -100,
         }}
         animate={{
-          y: 0,
-          opacity: 1,
+          y: isVisible ? 0 : -100,
+          opacity: isVisible ? 1 : 0,
         }}
         transition={{
           duration: 0.2,
+        }}
+        style={{
+          pointerEvents: isVisible ? 'auto' : 'none',
         }}
         className={`fixed inset-x-0 top-10 z-50 mx-auto w-max ${className}`}
       >

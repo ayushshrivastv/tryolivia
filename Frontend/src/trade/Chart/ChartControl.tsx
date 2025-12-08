@@ -7,6 +7,7 @@
 
 'use client';
 
+import Link from 'next/link';
 import { Button } from '@/src/ui/Button';
 import { Tabs, TabsList, TabsTrigger } from '@/src/ui/Tabs';
 import { ChartIcon } from '@/src/components/Icons';
@@ -71,6 +72,28 @@ export default function ChartControl() {
             1w
           </Button>
         </div>
+
+        {/* Dashboard Button */}
+        <Link href="/dashboard/nyc">
+          <button
+            className="rounded-full px-4 py-2 text-sm text-white transition-all duration-200"
+            style={{
+              backgroundColor: 'rgba(10, 10, 10, 0.7)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(10, 10, 10, 0.7)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            }}
+          >
+            Dashboard
+          </button>
+        </Link>
       </div>
 
       {/* <div className="ml-auto flex items-center gap-2">
