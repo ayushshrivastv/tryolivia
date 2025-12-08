@@ -95,15 +95,47 @@ To verify that everything is actually deployed and operational on-chain, you can
 - **Network:** Solana Devnet
 - **Transaction:** [`2sAt2vi2ngz6vkgHWDC1FGmAbMsMVLDdh9nyp7Bug5664JfEF1H3FLskMxs1JUqb3omh9tRHAQ4i9AC2EvRuFaUT`](https://solscan.io/tx/2sAt2vi2ngz6vkgHWDC1FGmAbMsMVLDdh9nyp7Bug5664JfEF1H3FLskMxs1JUqb3omh9tRHAQ4i9AC2EvRuFaUT?cluster=devnet)
 
-**MXE Account (Devnet):** Derived from program ID using `getMXEAccAddress(programId)` - The Multi-Party Execution Environment that coordinates encrypted computations for the prediction market. This account is initialized via `node Arcium/scripts/init-mxe-devnet.js` and contains the MXE public key used for x25519 encryption.
+**MXE Account (Devnet)**: [`BJ5kW53KtdsXLvieZPbvLXq3PBHnDFhD42oLZ952JBR1`](https://solscan.io/account/BJ5kW53KtdsXLvieZPbvLXq3PBHnDFhD42oLZ952JBR1?cluster=devnet) - The Multi-Party Execution Environment that coordinates encrypted computations for the prediction market. This account was successfully initialized on devnet and contains the MXE public key used for x25519 encryption.
 
-All of our computation definitions are also on-chain as Program Derived Addresses (PDAs) derived from the program address, meaning you can verify that the `initialize_market`, `place_bet`, and `distribute_rewards` computation definitions have been properly initialized and are ready to process encrypted transactions.
+**MXE Initialization Details:**
+- **Address:** `BJ5kW53KtdsXLvieZPbvLXq3PBHnDFhD42oLZ952JBR1`
+- **Cluster Offset:** 1078779259 (Devnet)
+- **Mempool Size:** Tiny
+- **Authority:** `HeaVXD9nctTFNd43Y9ic9jJwdGjvdFML4kbaATKs3Mg8`
+- **Transaction:** [`5qc4SwuxKLWQKn77CQ6oCPPjYY5EXkcSE2CN9AVTs4WYZTy2YjgXsEo3Dfgesi6tWSUXexyK4Awfe23VjzBus6SM`](https://solscan.io/tx/5qc4SwuxKLWQKn77CQ6oCPPjYY5EXkcSE2CN9AVTs4WYZTy2YjgXsEo3Dfgesi6tWSUXexyK4Awfe23VjzBus6SM?cluster=devnet)
+
+**Computation Definitions (Devnet):**
+
+All computation definitions are deployed on-chain as Program Derived Addresses (PDAs) and ready to process encrypted transactions:
+
+1. **`initialize_market`**: [`EaLE6pVXWddMMoo5ZdBMcq8LNTVFSDpf2va8Yg1SyM8W`](https://solscan.io/account/EaLE6pVXWddMMoo5ZdBMcq8LNTVFSDpf2va8Yg1SyM8W?cluster=devnet)
+   - Transaction: [`bdJVfG3DJufz4cTRvmBRVyDz2dTf43SkHTcfcZgM6wHxKg2SJjgyjk4QR4j6sZDyeR1Un6BUz1oPErnBf1hJ5kC`](https://solscan.io/tx/bdJVfG3DJufz4cTRvmBRVyDz2dTf43SkHTcfcZgM6wHxKg2SJjgyjk4QR4j6sZDyeR1Un6BUz1oPErnBf1hJ5kC?cluster=devnet)
+
+2. **`place_bet`**: [`4jXcnCaJU4BmEWL5ZtngH3hL3sruLFn2mvaD6QZi6FVF`](https://solscan.io/account/4jXcnCaJU4BmEWL5ZtngH3hL3sruLFn2mvaD6QZi6FVF?cluster=devnet)
+   - Transaction: [`2su7HtCYwzMEbHGnvhFLy5dW5dxjiBTSvkBQQkNrDmWzEVKD5SSW6Cp35s2QGwARQNxmWZW1o4iVoBcKqCNCiiUf`](https://solscan.io/tx/2su7HtCYwzMEbHGnvhFLy5dW5dxjiBTSvkBQQkNrDmWzEVKD5SSW6Cp35s2QGwARQNxmWZW1o4iVoBcKqCNCiiUf?cluster=devnet)
+
+3. **`distribute_rewards`**: [`EWW5AMMoW8qgQCGrjRaJuQhufv7p3JXPZoPtU6jXjSSB`](https://solscan.io/account/EWW5AMMoW8qgQCGrjRaJuQhufv7p3JXPZoPtU6jXjSSB?cluster=devnet)
+   - Transaction: [`2r1SbM3WoK7kqgffPgqL2NbqfBDGHGBSkV4uHoXFhewgcCzstx3rbwhRLRfgoQoPQZbAgWcLXLwQDC3km8Kx3ptR`](https://solscan.io/tx/2r1SbM3WoK7kqgffPgqL2NbqfBDGHGBSkV4uHoXFhewgcCzstx3rbwhRLRfgoQoPQZbAgWcLXLwQDC3km8Kx3ptR?cluster=devnet)
 
 These verifiable on-chain deployments demonstrate that Olivia isn't just a concept - it's a fully functional, deployed system where anyone can verify the code, the transactions, and the encrypted computation infrastructure is all working together on a public blockchain.
 
 ---
 
 ## Building and Deploying
+
+### 🎉 Current Deployment Status
+
+**The Olivia Prediction Market is fully deployed and operational on Solana Devnet with complete Arcium MXE integration!**
+
+- ✅ Prediction Market Program deployed
+- ✅ MXE Account initialized
+- ✅ All 3 Computation Definitions initialized
+- ✅ Encrypted predictions enabled (`NEXT_PUBLIC_DEMO_NO_ARCIUM=false`)
+- ✅ Ready for production testing on devnet
+
+The instructions below are for reference and fresh deployments.
+
+---
 
 ### Prerequisites
 
@@ -185,7 +217,35 @@ These verifiable on-chain deployments demonstrate that Olivia isn't just a conce
 
 ### Initialize Arcium Accounts
 
-After deployment, initialize the Arcium infrastructure:
+After deployment, initialize the Arcium infrastructure. You can use either the Arcium CLI (recommended) or the Node.js scripts.
+
+#### Method 1: Using Arcium CLI (Recommended)
+
+1. **Initialize MXE Account:**
+   ```bash
+   arcium init-mxe \
+     --callback-program EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA \
+     --cluster-offset 1078779259 \
+     --keypair-path ~/.config/solana/id.json \
+     --rpc-url https://api.devnet.solana.com \
+     --mempool-size Tiny \
+     --authority <YOUR_WALLET_ADDRESS>
+   ```
+
+2. **Initialize Computation Definitions:**
+   ```bash
+   node Arcium/scripts/init-comp-defs-devnet.js
+   ```
+
+3. **Verify Initialization:**
+   ```bash
+   # Check MXE account information
+   arcium mxe-info \
+     --mxe-program EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA \
+     --rpc-url https://api.devnet.solana.com
+   ```
+
+#### Method 2: Using Node.js Scripts
 
 1. **Initialize MXE Account:**
    ```bash
@@ -200,11 +260,13 @@ After deployment, initialize the Arcium infrastructure:
 3. **Verify Initialization:**
    ```bash
    # Check MXE account exists
-   solana account <MXE_ADDRESS>
+   solana account BJ5kW53KtdsXLvieZPbvLXq3PBHnDFhD42oLZ952JBR1
 
    # Check computation definitions are initialized
    # (Addresses are derived PDAs from program ID)
    ```
+
+**Note:** The MXE and all computation definitions are already initialized on devnet. These steps are only needed for fresh deployments or localnet setup.
 
 ### Localnet Setup (Development)
 
@@ -241,11 +303,18 @@ For local development with ARX nodes:
 Update `Frontend/.env.local`:
 ```env
 NEXT_PUBLIC_SOLANA_NETWORK=devnet
-NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
+NEXT_PUBLIC_SOLANA_RPC_URL=https://devnet.helius-rpc.com/?api-key=YOUR_API_KEY
 NEXT_PUBLIC_PREDICTION_MARKET_PROGRAM_ID=EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA
 NEXT_PUBLIC_ARCIUM_CLUSTER_OFFSET=1078779259
 NEXT_PUBLIC_DEMO_NO_ARCIUM=false
 ```
+
+**Important Configuration Notes:**
+- **RPC URL**: We use Helius RPC for better reliability and rate limits. Get your free API key at [helius.dev](https://www.helius.dev/)
+- **DEMO_NO_ARCIUM**: Set to `false` to enable encrypted predictions via Arcium MXE (production mode)
+- **DEMO_NO_ARCIUM**: Set to `true` only for testing basic program functionality without MPC encryption
+
+The current production deployment on devnet has Arcium MXE fully initialized and operational.
 
 ### Troubleshooting
 
@@ -265,6 +334,11 @@ NEXT_PUBLIC_DEMO_NO_ARCIUM=false
 **Issue: Insufficient funds for deployment**
 - **Cause:** Deployment requires ~3.5 SOL for rent-exempt program account
 - **Solution:** Request airdrops on devnet: `solana airdrop 2` (may need multiple requests)
+
+**Issue: MXE initialization fails with "ConstraintSeeds" error**
+- **Cause:** Using Node.js script `init-mxe-devnet.js` may have incorrect seed derivation for MXE keygen computation account
+- **Solution:** Use the Arcium CLI instead: `arcium init-mxe` with proper parameters
+- **Alternative:** The MXE is already initialized on devnet, no action needed for existing deployment
 
 ---
 
@@ -290,6 +364,43 @@ NEXT_PUBLIC_DEMO_NO_ARCIUM=false
    ```bash
    docker compose -f Arcium/artifacts/docker-compose-arx-env.yml logs -f
    ```
+
+---
+
+## Quick Reference
+
+### Devnet Addresses
+
+```
+Prediction Market Program: EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA
+Arcium Program:            BKck65TgoKRokMjQM3datB9oRwJ8rAj2jxPXvHXUvcL6
+MXE Account:               BJ5kW53KtdsXLvieZPbvLXq3PBHnDFhD42oLZ952JBR1
+```
+
+### Computation Definitions
+
+```
+initialize_market:    EaLE6pVXWddMMoo5ZdBMcq8LNTVFSDpf2va8Yg1SyM8W
+place_bet:            4jXcnCaJU4BmEWL5ZtngH3hL3sruLFn2mvaD6QZi6FVF
+distribute_rewards:   EWW5AMMoW8qgQCGrjRaJuQhufv7p3JXPZoPtU6jXjSSB
+```
+
+### Useful Commands
+
+**Check MXE Status:**
+```bash
+arcium mxe-info --mxe-program EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA --rpc-url https://api.devnet.solana.com
+```
+
+**Verify Accounts:**
+```bash
+solana account BJ5kW53KtdsXLvieZPbvLXq3PBHnDFhD42oLZ952JBR1 --url devnet
+```
+
+**View on Solscan:**
+- [Prediction Market Program](https://solscan.io/account/EFgvReNjDSd4vyW5GcGqY5rRrzQVVoTWYNu1yDqcxWeA?cluster=devnet)
+- [MXE Account](https://solscan.io/account/BJ5kW53KtdsXLvieZPbvLXq3PBHnDFhD42oLZ952JBR1?cluster=devnet)
+- [Arcium Program](https://solscan.io/account/BKck65TgoKRokMjQM3datB9oRwJ8rAj2jxPXvHXUvcL6?cluster=devnet)
 
 ---
 

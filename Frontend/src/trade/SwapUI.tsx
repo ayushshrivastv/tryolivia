@@ -746,7 +746,7 @@ export default function SwapUI({ baseCurrency, quoteCurrency, marketId }: SwapUI
       logArciumError(arciumError, 'Place Bet');
 
       // Build user-friendly error message
-      let errorMessage = arciumError.userMessage;
+      const errorMessage = arciumError.userMessage;
       let errorDetails = arciumError.details || '';
       
       // Add retry suggestion if applicable

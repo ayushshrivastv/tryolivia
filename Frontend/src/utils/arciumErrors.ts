@@ -22,9 +22,9 @@ export interface ArciumError {
 /**
  * Parse Solana transaction error and return user-friendly message
  */
-export function parseArciumError(error: any): ArciumError {
+export function parseArciumError(error: unknown): ArciumError {
   // Try to parse JSON string if error is a string
-  let parsedError: any = error;
+  let parsedError: unknown = error;
   if (typeof error === 'string') {
     try {
       parsedError = JSON.parse(error);
@@ -38,8 +38,9 @@ export function parseArciumError(error: any): ArciumError {
   // This format: {"InstructionError":[3,"ProgramFailedToComplete"]}
   if (typeof parsedError === 'object' && parsedError !== null) {
     // Check for InstructionError array format
-    if (parsedError.InstructionError && Array.isArray(parsedError.InstructionError)) {
-      const errorCode = parsedError.InstructionError[1];
+    const parsedObj = parsedError as Record<string, unknown>;
+    if (parsedObj.InstructionError && Array.isArray(parsedObj.InstructionError)) {
+      const errorCode = parsedObj.InstructionError[1];
       if (errorCode === 'ProgramFailedToComplete' || 
           (typeof errorCode === 'string' && errorCode.includes('FailedToComplete'))) {
         return {
@@ -72,7 +73,7 @@ export function parseArciumError(error: any): ArciumError {
   // Convert to string for pattern matching
   const errorString = typeof error === 'string'
     ? error
-    : error?.message || JSON.stringify(error);
+    : (error instanceof Error ? error.message : JSON.stringify(error));
 
   // Check for common Arcium MPC errors in string format
   // IMPORTANT: Check these patterns first before generic patterns

@@ -5,7 +5,7 @@
  * Licensed under the Apache 2.0
  */
 
-import { Connection, TransactionSignature, Commitment } from "@solana/web3.js";
+import { Connection, TransactionSignature, Commitment, Transaction, PublicKey, Signer } from "@solana/web3.js";
 
 /**
  * Enhanced transaction confirmation with retries and better error handling
@@ -258,9 +258,8 @@ export async function checkTransactionStatusWithFallback(
  */
 export async function simulateTransaction(
   connection: Connection,
-  transaction: any,
-  signers?: any[],
-  commitment: Commitment = "confirmed"
+  transaction: Transaction | { recentBlockhash?: string; feePayer?: PublicKey },
+  signers?: Signer[]
 ): Promise<{
   success: boolean;
   error?: string;
@@ -275,25 +274,25 @@ export async function simulateTransaction(
     let simulation;
 
     try {
-      // Approach 1: Try with replaceRecentBlockhash (works with modern Transaction objects)
-      if (transaction.recentBlockhash && transaction.feePayer) {
+      // Only simulate if it's a Transaction instance
+      if (transaction instanceof Transaction) {
+        // Standard simulation - signers are optional
         simulation = await connection.simulateTransaction(
           transaction,
-          signers,
-          {
-            commitment,
-            replaceRecentBlockhash: true, // Use fresh blockhash for simulation
-          }
+          signers
         );
       } else {
-        // Approach 2: Standard simulation
-        simulation = await connection.simulateTransaction(transaction, {
-          commitment,
-        });
+        // Not a Transaction instance, skip simulation
+        console.log('Transaction is not a Transaction instance, skipping simulation');
+        return {
+          success: true,
+          logs: [],
+        };
       }
-    } catch (simError: any) {
+    } catch (simError: unknown) {
       // If simulation fails due to format issues, just skip it and let the actual transaction run
-      console.warn('⚠️ Transaction simulation skipped due to format issue:', simError.message);
+      const errorMessage = simError instanceof Error ? simError.message : String(simError);
+      console.warn('⚠️ Transaction simulation skipped due to format issue:', errorMessage);
       console.log('Transaction will be sent without pre-validation');
       return {
         success: true, // Return success to allow transaction to proceed

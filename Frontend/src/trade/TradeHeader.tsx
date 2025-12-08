@@ -25,7 +25,6 @@ export default function TradeHeader({
   const isNYCMayorMarket = baseCurrency.includes('NYC-MAYOR') || baseCurrency === 'NYC-MAYOR';
   const [name, setName] = useState<string>();
   const [price, setPrice] = useState<string>('');
-  const [priceChange, setPriceChange] = useState<number>(0);
   const [prevPrice, setPrevPrice] = useState<number | null>(null);
   const [animatedPercentage, setAnimatedPercentage] = useState<number>(88.8);
   const [animatedUsd, setAnimatedUsd] = useState<number>(600);
@@ -49,12 +48,6 @@ export default function TradeHeader({
       if (p) {
         const currentPrice = parseFloat(p);
         setPrice(p);
-
-        if (prevPrice !== null) {
-          const change = ((currentPrice - prevPrice) / prevPrice) * 100;
-          setPriceChange(parseFloat(change.toFixed(2)));
-        }
-
         setPrevPrice(currentPrice);
       }
     };

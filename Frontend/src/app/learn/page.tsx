@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { MainLayout } from '@/src/layout/Layout';
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { IconCheck, IconClock, IconTrophy, IconLoader2 } from '@tabler/icons-react';
 import ClaimRewardModal from '@/src/components/ClaimRewardModal';
@@ -23,7 +23,6 @@ interface BetData {
 
 export default function Portfolio() {
   const { connected, publicKey } = useWallet();
-  const { connection } = useConnection();
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [selectedBet, setSelectedBet] = useState<BetData | null>(null);
   const [claimingId, setClaimingId] = useState<string | null>(null);
@@ -76,7 +75,7 @@ export default function Portfolio() {
       setTimeout(() => {
         setClaimMessage('');
       }, 5000);
-    } catch (error) {
+    } catch {
       setClaimStatus('error');
       setClaimMessage('Transaction failed. Please try again.');
       setTimeout(() => {
@@ -187,7 +186,7 @@ export default function Portfolio() {
                               }}
                             />
                           </div>
-                          <span className="text-xs font-medium min-w-[60px]" style={{ color: '#9E9E9E' }}>6% Don't Know</span>
+                          <span className="text-xs font-medium min-w-[60px]" style={{ color: '#9E9E9E' }}>6% Don&apos;t Know</span>
                         </div>
                       </div>
                     </div>
