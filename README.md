@@ -34,7 +34,7 @@ Ayush Srivastava
 
 Generate keypair and encrypt prediction using x25519 with MXE public key:
 
-\`\`\`typescript
+```typescript
 import { x25519 } from "@noble/curves/ed25519";
 import { RescueCipher, getMXEPublicKey } from "@arcium-hq/client";
 import { randomBytes } from "crypto";
@@ -57,13 +57,13 @@ const encryptedPrediction = cipher.encrypt(
   [BigInt(prediction ? 1 : 0)],
   nonce
 );
-\`\`\`
+```
 
 ### 2. MPC Circuit for Encrypted Computation
 
 Arcium circuit defines the encrypted computation logic that runs on encrypted data:
 
-\`\`\`rust
+```rust
 // Arcium/circuits/EncryptedIxs/src/lib.rs
 #[instruction]
 pub fn place_bet(
@@ -80,13 +80,13 @@ pub fn place_bet(
     }
     .reveal()
 }
-\`\`\`
+```
 
 ### 3. Queue Encrypted Computation
 
 Submit encrypted prediction to Arcium's computation queue (Arcium accounts required):
 
-\`\`\`typescript
+```typescript
 import {
   getMXEAccAddress,
   getComputationAccAddress,
@@ -131,13 +131,13 @@ await program.methods
 
 // Wait for computation to finalize
 await awaitComputationFinalization(provider, computationOffset, programId, "confirmed");
-\`\`\`
+```
 
 ### 4. Callback Receives Result
 
 Arcium callback receives computation result and updates market state:
 
-\`\`\`rust
+```rust
 // Callback from Arcium after market resolution computation
 pub fn resolve_market_callback(
     ctx: Context<ResolveMarketCallback>,
@@ -151,7 +151,7 @@ pub fn resolve_market_callback(
     market.state = MarketState::Resolved;
     Ok(())
 }
-\`\`\`
+```
 
 **Note:** The current `place_bet` implementation is legacy and stores encrypted data directly. The Arcium circuit (`place_bet`) and integration pattern above represent the intended encrypted computation flow for processing predictions privately via MPC.
 
