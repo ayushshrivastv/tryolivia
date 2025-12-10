@@ -181,17 +181,12 @@ export default function MarketsGrid({ onFormToggle }: MarketsGridProps = {}) {
         </div>
         <button
           onClick={handleOpenForm}
-          className="rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap"
+          className="rounded-full px-4 py-2 text-sm transition-all duration-200 cursor-pointer hover:opacity-80 whitespace-nowrap"
           style={{
-            backgroundColor: '#5522e0',
-            border: '1px solid rgba(85, 34, 224, 0.3)',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
             color: 'white',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#6b3ae8';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#5522e0';
           }}
         >
           Create Market
@@ -370,23 +365,18 @@ export default function MarketsGrid({ onFormToggle }: MarketsGridProps = {}) {
                 >
                   Cancel
                 </Button>
-                <button
+                <Button
                   type="submit"
-                  className="rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-200"
+                  className="rounded-full px-4 py-2 text-sm transition-all duration-200"
                   style={{
-                    backgroundColor: '#22c55e',
-                    border: '1px solid rgba(34, 197, 94, 0.3)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
                     color: 'white',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#16a34a';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#22c55e';
                   }}
                 >
                   Create Market
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -399,21 +389,12 @@ export default function MarketsGrid({ onFormToggle }: MarketsGridProps = {}) {
           <CometCard key={market.id} rotateDepth={17.5} translateDepth={20}>
             <Link href={`/trade/${market.pair}`}>
               <div
-                className="rounded-xl overflow-hidden transition-all duration-200 cursor-pointer h-full flex flex-col hover:shadow-lg"
+                className="rounded-xl overflow-hidden transition-all duration-200 cursor-pointer h-full flex flex-col"
                 style={{
-                  backgroundColor: 'rgba(10, 10, 10, 0.9)',
+                  backgroundColor: 'rgba(10, 10, 10, 0.7)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(20px)',
+                  backdropFilter: 'blur(10px)',
                   minHeight: '400px',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
                 }}
               >
                 {/* Image - Top Half */}
@@ -453,19 +434,22 @@ export default function MarketsGrid({ onFormToggle }: MarketsGridProps = {}) {
 
                     {/* Trade Button */}
                     <button
-                      className="w-full py-2.5 rounded-full text-white text-sm font-medium transition-all duration-200"
+                      className="w-full py-2 rounded-full text-white text-sm font-medium transition-all duration-200"
                       style={{
-                        backgroundColor: '#22c55e',
-                        border: '1px solid rgba(34, 197, 94, 0.3)',
-                        fontFamily: 'GT America Mono, monospace',
+                      backgroundColor: 'rgba(10, 10, 10, 0.7)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      fontFamily: 'GT America Mono, monospace',
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#16a34a';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = '#22c55e';
-                      }}
-                    >
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(10, 10, 10, 0.7)';
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  >
                       Trade Market
                     </button>
                   </div>
