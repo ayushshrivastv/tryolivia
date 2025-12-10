@@ -404,3 +404,12 @@ solana account BJ5kW53KtdsXLvieZPbvLXq3PBHnDFhD42oLZ952JBR1 --url devnet
 
 ---
 
+## Additional Documentation
+
+For more detailed technical documentation on Olivia's integrated tech stack:
+
+- **Magic Block Ephemeral Rollups:** [docs/MagicBlock.md](docs/MagicBlock.md) - Learn how ephemeral rollups deliver instant, zero-fee transactions while maintaining decentralization
+- **Arcium Encrypted Computation:** [docs/Arcium.md](docs/Arcium.md) - Deep dive into Multi-Party Computation for private predictions and trustless market resolution
+
+---
+

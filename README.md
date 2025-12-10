@@ -36,54 +36,7 @@ Ephemeral rollups are temporary execution layers that exist only for the duratio
 
 Think of them as pop-up speed lanes that materialize exactly when needed, handle all the heavy lifting at lightning speed, then merge back onto the main blockchain highway with just the essential data.
 
-### How Magic Block Powers Olivia
-
-For prediction markets, speed and cost are critical. Users expect near-instantaneous bet placement, live pool updates, and immediate reward claims—all without paying transaction fees for every micro-interaction. Magic Block makes this possible:
-
-**1. Zero-Fee Betting**  
-When you place a bet on Olivia, Magic Block's ephemeral rollup processes it instantly without charging gas fees. Multiple bets, retractions, or market interactions happen freely within the rollup's temporary state.
-
-**2. Real-Time Market Updates**  
-As users trade, pool sizes (YES/NO) and odds update in real-time within the ephemeral environment. Everyone sees live data without waiting for blockchain confirmations or paying for state reads.
-
-**3. Instant Finality**  
-Once you're done interacting—whether placing a single bet or a flurry of trades—the rollup commits the final state to Solana in one efficient transaction. You get instant feedback during interaction, then trustless permanence when finalized.
-
-**4. Scalability Without Compromise**  
-During high-traffic events (major elections, sports finals), thousands of users can bet simultaneously without congesting Solana's mainnet. Each user's session runs in an isolated, high-performance execution environment.
-
-### The Technical Flow
-
-```
-User Action (Place Bet) 
-    ↓
-Ephemeral Rollup Spins Up
-    ↓
-Process Transaction Off-Chain (0 fees, <100ms latency)
-    ↓
-Update Temporary State (pool sizes, odds, user balance)
-    ↓
-Finalize & Commit to Solana L1 (single transaction)
-    ↓
-Ephemeral Rollup Dissolves
-    ↓
-Permanent State on Solana (trustless, verifiable)
-```
-
-### Why This Matters for Decentralized Prediction Markets
-
-Traditional prediction markets face a UX dilemma: centralized platforms offer instant trades but require trust, while decentralized alternatives burden users with slow confirmations and high fees. Magic Block's ephemeral rollups eliminate this trade-off:
-
-- **Speed:** Bet placement feels as fast as clicking a button on a web2 app
-- **Cost:** Zero fees for all interactions within the rollup session
-- **Decentralization:** Final state lives permanently on Solana, fully verifiable and trustless
-- **Scalability:** Handle viral markets with thousands of concurrent users effortlessly
-
-Combined with Arcium's encrypted computation (keeping predictions private) and Solana's high-performance backbone, Magic Block completes Olivia's tech stack—delivering Web2 responsiveness with Web3 guarantees.
-
-The result? A prediction market that feels effortless, costs nothing to use, yet remains 100% decentralized. No compromises, no gatekeepers, just pure, open participation.
-
----
+**Magic Block Ephemeral Rollups:** [Arcium/docs/MagicBlock.md](Arcium/docs/MagicBlock.md) - Discover how ephemeral rollups deliver instant, zero-fee transactions while maintaining decentralization
 
 ## Why Arcium Powers Olivia's Trust Model
 
