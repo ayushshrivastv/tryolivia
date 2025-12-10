@@ -24,6 +24,10 @@ Dive in, create a market, predict boldly—and let's see what emerges when barri
 When Others Watch Chaos.
 Predict Them. Profit From Them.
 
+[![Watch the demo](https://img.youtube.com/vi/veCQLeF5lTQ/maxresdefault.jpg)](https://youtu.be/veCQLeF5lTQ)
+
+*Click the image above to watch the demo video*
+
 ---
 
 ## Magic Block's Ephemeral Rollups
