@@ -9,22 +9,151 @@
 
 Olivia — A truly decentralized, permissionless prediction market that runs without middlemen, gatekeepers, or hidden agendas. Anyone, anywhere, can spin up a market on any question that sparks their curiosity: election results, tech breakthroughs, sports outcomes, or even that friendly office bet. No approvals, no oversight, just pure, open participation.
 
-Arcium’s encrypted computation keeps every prediction private until the market resolves. Using Multi-Party Computation (MPC), your bet stays sealed in a cryptographic black box while the network crunches the numbers—fair rewards, zero peeking, no front-running.
+Arcium's encrypted computation keeps every prediction private until the market resolves. Using Multi-Party Computation (MPC), your bet stays sealed in a cryptographic black box while the network crunches the numbers—fair rewards, zero peeking, no front-running.
 
-Magic Block’s Ephemeral Rollups on Solana eliminate fees and latency. Place bets, resolve markets, claim rewards—instantly and for free, with the same snappiness you expect from top web apps.
+Magic Block's Ephemeral Rollups on Solana eliminate fees and latency. Place bets, resolve markets, claim rewards—instantly and for free, with the same snappiness you expect from top web apps.
 
-Solana’s high-performance backbone ties it all together, ensuring speed, security, and decentralization without compromise.
+Solana's high-performance backbone ties it all together, ensuring speed, security, and decentralization without compromise.
 
-The result? A platform where privacy, speed, and openness aren’t trade-offs—they’re the default. Communities form organically around the questions people actually care about, and collective insight emerges naturally, unhindered by cost or strategic gamesmanship.
+The result? A platform where privacy, speed, and openness aren't trade-offs—they're the default. Communities form organically around the questions people actually care about, and collective insight emerges naturally, unhindered by cost or strategic gamesmanship.
 
-Olivia isn’t just tech—it’s a vision: prediction markets should feel effortless yet remain fully decentralized. Whether you’re a developer diving into MPC and rollups, or a first-time user placing your inaugural bet, I’ve built this to be approachable, transparent, and fun.
+Olivia isn't just tech—it's a vision: prediction markets should feel effortless yet remain fully decentralized. Whether you're a developer diving into MPC and rollups, or a first-time user placing your inaugural bet, I've built this to be approachable, transparent, and fun.
 
-Dive in, create a market, predict boldly—and let’s see what emerges when barriers vanish.
+Dive in, create a market, predict boldly—and let's see what emerges when barriers vanish.
 
 When Others Watch Chaos.
 Predict Them. Profit From Them.
 
-Ayush Srivastava
+---
+
+## Magic Block's Ephemeral Rollups
+
+Olivia leverages **Magic Block's Ephemeral Rollups** on Solana to deliver instant, zero-cost transactions without sacrificing decentralization or security. While traditional Layer 2 rollups bundle transactions for cost efficiency, they introduce delays and still incur fees. Magic Block's approach is fundamentally different—ephemeral rollups create temporary, high-speed execution environments that handle rapid state changes off-chain, then commit only the final state back to Solana's mainnet.
+
+### What Are Ephemeral Rollups?
+
+Ephemeral rollups are temporary execution layers that exist only for the duration of active user interactions. Unlike persistent rollups that maintain continuous state, ephemeral rollups spin up on-demand when users initiate actions, process transactions instantly with zero fees during the active session, commit the final state to Solana Layer 1 once the interaction completes, and dissolve automatically after finalization—leaving no permanent overhead.
+
+Think of them as pop-up speed lanes that materialize exactly when needed, handle all the heavy lifting at lightning speed, then merge back onto the main blockchain highway with just the essential data.
+
+### How Magic Block Powers Olivia
+
+For prediction markets, speed and cost are critical. Users expect near-instantaneous bet placement, live pool updates, and immediate reward claims—all without paying transaction fees for every micro-interaction. Magic Block makes this possible:
+
+**1. Zero-Fee Betting**  
+When you place a bet on Olivia, Magic Block's ephemeral rollup processes it instantly without charging gas fees. Multiple bets, retractions, or market interactions happen freely within the rollup's temporary state.
+
+**2. Real-Time Market Updates**  
+As users trade, pool sizes (YES/NO) and odds update in real-time within the ephemeral environment. Everyone sees live data without waiting for blockchain confirmations or paying for state reads.
+
+**3. Instant Finality**  
+Once you're done interacting—whether placing a single bet or a flurry of trades—the rollup commits the final state to Solana in one efficient transaction. You get instant feedback during interaction, then trustless permanence when finalized.
+
+**4. Scalability Without Compromise**  
+During high-traffic events (major elections, sports finals), thousands of users can bet simultaneously without congesting Solana's mainnet. Each user's session runs in an isolated, high-performance execution environment.
+
+### The Technical Flow
+
+```
+User Action (Place Bet) 
+    ↓
+Ephemeral Rollup Spins Up
+    ↓
+Process Transaction Off-Chain (0 fees, <100ms latency)
+    ↓
+Update Temporary State (pool sizes, odds, user balance)
+    ↓
+Finalize & Commit to Solana L1 (single transaction)
+    ↓
+Ephemeral Rollup Dissolves
+    ↓
+Permanent State on Solana (trustless, verifiable)
+```
+
+### Why This Matters for Decentralized Prediction Markets
+
+Traditional prediction markets face a UX dilemma: centralized platforms offer instant trades but require trust, while decentralized alternatives burden users with slow confirmations and high fees. Magic Block's ephemeral rollups eliminate this trade-off:
+
+- **Speed:** Bet placement feels as fast as clicking a button on a web2 app
+- **Cost:** Zero fees for all interactions within the rollup session
+- **Decentralization:** Final state lives permanently on Solana, fully verifiable and trustless
+- **Scalability:** Handle viral markets with thousands of concurrent users effortlessly
+
+Combined with Arcium's encrypted computation (keeping predictions private) and Solana's high-performance backbone, Magic Block completes Olivia's tech stack—delivering Web2 responsiveness with Web3 guarantees.
+
+The result? A prediction market that feels effortless, costs nothing to use, yet remains 100% decentralized. No compromises, no gatekeepers, just pure, open participation.
+
+---
+
+## Why Arcium Powers Olivia's Trust Model
+
+Traditional prediction markets face a fundamental dilemma: they rely on trusted intermediaries to create and resolve markets. Platforms like Polymarket depend on DAOs or centralized entities to decide what markets exist and what the correct outcome is. This creates three critical problems that Arcium solves:
+
+### The Centralization Bottleneck
+
+In existing prediction markets, a small group controls market creation and resolution. Want to bet on a local election, a niche scientific breakthrough, or an esoteric cultural event? You need permission. Someone must approve your market, monitor the outcome, and manually resolve it. This gatekeeping contradicts the promise of decentralized prediction markets—anyone should be able to create a market on anything, permissionlessly.
+
+Arcium's Multi-Party Computation (MPC) removes this bottleneck by enabling **permissionless market creation**. Anyone can spin up a market without approval, because the resolution mechanism is automated, encrypted, and trustless. No central authority decides what questions deserve markets—the community does.
+
+### The Game-Theoretic Problem: Strategic Dishonesty
+
+Here's the fatal flaw in majority-based voting systems: if quorum members can see how others have voted before submitting their own vote, they're incentivized to vote dishonestly. Imagine you're part of a 10-person quorum resolving "Did Candidate X win the election?" You know the answer is YES, but you see that 6 people have already voted NO. If incorrect votes are penalized (through stake slashing), you might vote NO anyway to avoid losing your stake—even though you know it's wrong.
+
+This creates a **dishonest equilibrium** where participants prioritize self-preservation over truth. The market's integrity collapses because rational actors game the system.
+
+Arcium's **confidential voting** eliminates this problem entirely. Using encrypted computation, quorum votes remain hidden until the voting period closes. No one knows how others voted, so there's no strategic advantage to lying. Your best move is always to vote honestly—because you can't predict what everyone else will do. This restores the **honest equilibrium** that prediction markets require to function.
+
+### Arcium's Four Pillars for Trustless Prediction Markets
+
+Olivia uses Arcium's encrypted computation framework to achieve four critical guarantees:
+
+**1. Permissionless Market Creation**  
+Anyone can create a market on any event—elections, tech launches, sports, weather, even personal bets between friends. No approvals, no gatekeepers, just pure open participation. Arcium's MPC ensures resolution doesn't require a trusted party.
+
+**2. Confidential Voting for Fair Resolution**  
+When an event concludes, a randomly selected quorum votes on the outcome. Their votes are encrypted using Arcium's Multi-Party Execution Environments (MXEs). No participant sees how others voted until voting closes. This prevents strategic dishonesty and ensures votes reflect genuine beliefs.
+
+**3. Trustless Outcome Determination**  
+Once voting ends, Arcium's MPC network decrypts and tallies the votes. The majority outcome becomes the market resolution. Quorum members who voted incorrectly lose their staked collateral (distributed to honest voters), creating a financial incentive for truthfulness. No single entity controls the result—it's purely algorithmic.
+
+**4. Scalability Through MXEs and Arx Nodes**  
+Arcium's architecture uses Multi-Party Execution Environments (MXEs) to parallelize encrypted computations across a distributed network of Arx nodes. Each node contributes computational resources without seeing the underlying data. This allows Olivia to handle thousands of concurrent markets and millions of encrypted predictions without bottlenecks.
+
+### How Encrypted Voting Works: A Simple Example
+
+Let's walk through a market resolution:
+
+**Market:** "Will it rain in NYC tomorrow?"  
+**Event Concludes:** It rained.  
+**Quorum Selected:** 10 random participants, each staking 100 tokens.
+
+1. **Encrypted Voting Begins**  
+   Each quorum member submits their vote (YES/NO) encrypted with Arcium's MPC protocol. Their vote is split into shares distributed across multiple Arx nodes. No single node sees the actual vote—only encrypted fragments.
+
+2. **Voting Period Closes**  
+   After 24 hours, voting ends. Only now can the votes be decrypted and tallied. The encryption ensures no one could see intermediate results during the voting window.
+
+3. **Decryption and Resolution**  
+   Arcium's MPC network reconstructs the votes from their encrypted shares: 9 YES, 1 NO. The market resolves to YES.
+
+4. **Reward Distribution**  
+   The 9 honest voters receive their 100 tokens back plus a share of the dishonest voter's 100 tokens. The 1 incorrect voter loses their stake.
+
+Throughout this process, no central authority intervened. The outcome emerged purely from cryptographic consensus—trustless, verifiable, and fair.
+
+### Why This Changes Prediction Markets
+
+Before Arcium, decentralized prediction markets faced an impossible choice: sacrifice decentralization by using trusted resolvers, or sacrifice fairness by exposing votes publicly. Polymarket chose the first path (DAO-controlled resolution). Augur chose the second (transparent voting with game-theoretic flaws).
+
+Olivia, powered by Arcium, escapes this trade-off entirely. Encrypted voting preserves privacy during the critical window when strategic manipulation could occur, then reveals results only when honesty is the only rational strategy. Combined with permissionless market creation and automated resolution, Arcium makes prediction markets truly open, fair, and trustless.
+
+The result? A platform where:
+- **Anyone can create markets** without permission
+- **Quorum members vote honestly** because they can't game the system
+- **Outcomes are trustless** with no central authority
+- **Privacy and fairness coexist** through encrypted computation
+
+This is why Arcium isn't just a feature—it's the foundation that makes Olivia's vision possible.
 
 ---
 
@@ -157,4 +286,9 @@ pub fn resolve_market_callback(
 
 ---
 
-For detailed Arcium integration documentation, see [Arcium/README.md](Arcium/README.md).
+## Documentation
+
+For detailed technical documentation on how these technologies integrate with Olivia:
+
+- **Arcium Encrypted Computation:** [Arcium/docs/Arcium.md](Arcium/docs/Arcium.md) - Learn how Multi-Party Computation enables private predictions and trustless market resolution
+- **Magic Block Ephemeral Rollups:** [Arcium/docs/MagicBlock.md](Arcium/docs/MagicBlock.md) - Discover how ephemeral rollups deliver instant, zero-fee transactions while maintaining decentralization
