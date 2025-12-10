@@ -38,16 +38,6 @@ Think of them as pop-up speed lanes that materialize exactly when needed, handle
 
 **Magic Block Ephemeral Rollups:** [Arcium/docs/MagicBlock.md](Arcium/docs/MagicBlock.md) - Discover how ephemeral rollups deliver instant, zero-fee transactions while maintaining decentralization
 
-## Why Arcium Powers Olivia's Trust Model
-
-Traditional prediction markets face a fundamental dilemma: they rely on trusted intermediaries to create and resolve markets. Platforms like Polymarket depend on DAOs or centralized entities to decide what markets exist and what the correct outcome is. This creates three critical problems that Arcium solves:
-
-### The Centralization Bottleneck
-
-In existing prediction markets, a small group controls market creation and resolution. Want to bet on a local election, a niche scientific breakthrough, or an esoteric cultural event? You need permission. Someone must approve your market, monitor the outcome, and manually resolve it. This gatekeeping contradicts the promise of decentralized prediction markets—anyone should be able to create a market on anything, permissionlessly.
-
-Arcium's Multi-Party Computation (MPC) removes this bottleneck by enabling **permissionless market creation**. Anyone can spin up a market without approval, because the resolution mechanism is automated, encrypted, and trustless. No central authority decides what questions deserve markets—the community does.
-
 ### The Game-Theoretic Problem: Strategic Dishonesty
 
 Here's the fatal flaw in majority-based voting systems: if quorum members can see how others have voted before submitting their own vote, they're incentivized to vote dishonestly. Imagine you're part of a 10-person quorum resolving "Did Candidate X win the election?" You know the answer is YES, but you see that 6 people have already voted NO. If incorrect votes are penalized (through stake slashing), you might vote NO anyway to avoid losing your stake—even though you know it's wrong.
@@ -56,55 +46,13 @@ This creates a **dishonest equilibrium** where participants prioritize self-pres
 
 Arcium's **confidential voting** eliminates this problem entirely. Using encrypted computation, quorum votes remain hidden until the voting period closes. No one knows how others voted, so there's no strategic advantage to lying. Your best move is always to vote honestly—because you can't predict what everyone else will do. This restores the **honest equilibrium** that prediction markets require to function.
 
-### Arcium's Four Pillars for Trustless Prediction Markets
-
-Olivia uses Arcium's encrypted computation framework to achieve four critical guarantees:
-
-**1. Permissionless Market Creation**  
-Anyone can create a market on any event—elections, tech launches, sports, weather, even personal bets between friends. No approvals, no gatekeepers, just pure open participation. Arcium's MPC ensures resolution doesn't require a trusted party.
-
-**2. Confidential Voting for Fair Resolution**  
-When an event concludes, a randomly selected quorum votes on the outcome. Their votes are encrypted using Arcium's Multi-Party Execution Environments (MXEs). No participant sees how others voted until voting closes. This prevents strategic dishonesty and ensures votes reflect genuine beliefs.
-
-**3. Trustless Outcome Determination**  
-Once voting ends, Arcium's MPC network decrypts and tallies the votes. The majority outcome becomes the market resolution. Quorum members who voted incorrectly lose their staked collateral (distributed to honest voters), creating a financial incentive for truthfulness. No single entity controls the result—it's purely algorithmic.
-
-**4. Scalability Through MXEs and Arx Nodes**  
-Arcium's architecture uses Multi-Party Execution Environments (MXEs) to parallelize encrypted computations across a distributed network of Arx nodes. Each node contributes computational resources without seeing the underlying data. This allows Olivia to handle thousands of concurrent markets and millions of encrypted predictions without bottlenecks.
-
-### How Encrypted Voting Works: A Simple Example
-
-Let's walk through a market resolution:
-
-**Market:** "Will it rain in NYC tomorrow?"  
-**Event Concludes:** It rained.  
-**Quorum Selected:** 10 random participants, each staking 100 tokens.
-
-1. **Encrypted Voting Begins**  
-   Each quorum member submits their vote (YES/NO) encrypted with Arcium's MPC protocol. Their vote is split into shares distributed across multiple Arx nodes. No single node sees the actual vote—only encrypted fragments.
-
-2. **Voting Period Closes**  
-   After 24 hours, voting ends. Only now can the votes be decrypted and tallied. The encryption ensures no one could see intermediate results during the voting window.
-
-3. **Decryption and Resolution**  
-   Arcium's MPC network reconstructs the votes from their encrypted shares: 9 YES, 1 NO. The market resolves to YES.
-
-4. **Reward Distribution**  
-   The 9 honest voters receive their 100 tokens back plus a share of the dishonest voter's 100 tokens. The 1 incorrect voter loses their stake.
-
-Throughout this process, no central authority intervened. The outcome emerged purely from cryptographic consensus—trustless, verifiable, and fair.
+**Learn more:** [The Future of Prediction Markets Using Arcium](https://www.arcium.com/articles/the-future-of-prediction-markets-using-arcium)
 
 ### Why This Changes Prediction Markets
 
 Before Arcium, decentralized prediction markets faced an impossible choice: sacrifice decentralization by using trusted resolvers, or sacrifice fairness by exposing votes publicly. Polymarket chose the first path (DAO-controlled resolution). Augur chose the second (transparent voting with game-theoretic flaws).
 
 Olivia, powered by Arcium, escapes this trade-off entirely. Encrypted voting preserves privacy during the critical window when strategic manipulation could occur, then reveals results only when honesty is the only rational strategy. Combined with permissionless market creation and automated resolution, Arcium makes prediction markets truly open, fair, and trustless.
-
-The result? A platform where:
-- **Anyone can create markets** without permission
-- **Quorum members vote honestly** because they can't game the system
-- **Outcomes are trustless** with no central authority
-- **Privacy and fairness coexist** through encrypted computation
 
 This is why Arcium isn't just a feature—it's the foundation that makes Olivia's vision possible.
 
