@@ -9,6 +9,10 @@
 
 Olivia — A truly decentralized, permissionless prediction market that runs without middlemen, gatekeepers, or hidden agendas. Anyone, anywhere, can spin up a market on any question that sparks their curiosity: election results, tech breakthroughs, sports outcomes, or even that friendly office bet. No approvals, no oversight, just pure, open participation.
 
+[![Watch the demo](https://img.youtube.com/vi/veCQLeF5lTQ/maxresdefault.jpg)](https://youtu.be/veCQLeF5lTQ)
+
+*Click the image above to watch the demo video*
+
 Arcium's encrypted computation keeps every prediction private until the market resolves. Using Multi-Party Computation (MPC), your bet stays sealed in a cryptographic black box while the network crunches the numbers—fair rewards, zero peeking, no front-running.
 
 Magic Block's Ephemeral Rollups on Solana eliminate fees and latency. Place bets, resolve markets, claim rewards—instantly and for free, with the same snappiness you expect from top web apps.
@@ -23,10 +27,6 @@ Dive in, create a market, predict boldly—and let's see what emerges when barri
 
 When Others Watch Chaos.
 Predict Them. Profit From Them.
-
-[![Watch the demo](https://img.youtube.com/vi/veCQLeF5lTQ/maxresdefault.jpg)](https://youtu.be/veCQLeF5lTQ)
-
-*Click the image above to watch the demo video*
 
 ---
 
