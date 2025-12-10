@@ -32,18 +32,6 @@ Predict Them. Profit From Them.
 
 ---
 
-## Magic Block's Ephemeral Rollups
-
-Olivia leverages **Magic Block's Ephemeral Rollups** on Solana to deliver instant, zero-cost transactions without sacrificing decentralization or security. While traditional Layer 2 rollups bundle transactions for cost efficiency, they introduce delays and still incur fees. Magic Block's approach is fundamentally different—ephemeral rollups create temporary, high-speed execution environments that handle rapid state changes off-chain, then commit only the final state back to Solana's mainnet.
-
-### What Are Ephemeral Rollups?
-
-Ephemeral rollups are temporary execution layers that exist only for the duration of active user interactions. Unlike persistent rollups that maintain continuous state, ephemeral rollups spin up on-demand when users initiate actions, process transactions instantly with zero fees during the active session, commit the final state to Solana Layer 1 once the interaction completes, and dissolve automatically after finalization—leaving no permanent overhead.
-
-Think of them as pop-up speed lanes that materialize exactly when needed, handle all the heavy lifting at lightning speed, then merge back onto the main blockchain highway with just the essential data.
-
-**Magic Block Ephemeral Rollups:** [Arcium/docs/MagicBlock.md](Arcium/docs/MagicBlock.md) - Discover how ephemeral rollups deliver instant, zero-fee transactions while maintaining decentralization
-
 ### The Game-Theoretic Problem: Strategic Dishonesty
 
 Here's the fatal flaw in majority-based voting systems: if quorum members can see how others have voted before submitting their own vote, they're incentivized to vote dishonestly. Imagine you're part of a 10-person quorum resolving "Did Candidate X win the election?" You know the answer is YES, but you see that 6 people have already voted NO. If incorrect votes are penalized (through stake slashing), you might vote NO anyway to avoid losing your stake—even though you know it's wrong.
