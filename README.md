@@ -13,6 +13,8 @@ Olivia — A truly decentralized, permissionless prediction market that runs wit
 
 *Click the image above to watch the demo video*
 
+[The Future of Prediction Markets Using Arcium](https://www.arcium.com/articles/the-future-of-prediction-markets-using-arcium)
+
 Arcium's encrypted computation keeps every prediction private until the market resolves. Using Multi-Party Computation (MPC), your bet stays sealed in a cryptographic black box while the network crunches the numbers—fair rewards, zero peeking, no front-running.
 
 Magic Block's Ephemeral Rollups on Solana eliminate fees and latency. Place bets, resolve markets, claim rewards—instantly and for free, with the same snappiness you expect from top web apps.
