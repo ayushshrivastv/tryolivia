@@ -23,9 +23,6 @@ export default function Home() {
     setIsMounted(true);
     // Check if user has already accessed
     if (typeof window !== 'undefined') {
-      // FOR TESTING: Uncomment the line below to force show the modal
-      localStorage.removeItem('olivia_early_access'); // TEMPORARY - Remove this line after testing
-      
       const hasEarlyAccess = localStorage.getItem('olivia_early_access');
       console.log('🔍 Early access check:', hasEarlyAccess);
       console.log('🔍 isMounted:', true);
