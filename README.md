@@ -22,7 +22,7 @@ Solana's high-performance backbone ties it all together, ensuring speed, securit
 
 The result? A platform where privacy, speed, and openness aren't trade-offs—they're the default. Communities form organically around the questions people actually care about, and collective insight emerges naturally, unhindered by cost or strategic gamesmanship.
 
-Olivia isn't just tech—it's a vision: prediction markets should feel effortless yet remain fully decentralized. Whether you're a developer diving into MPC and rollups, or a first-time user placing your inaugural bet, I've built this to be approachable, transparent, and fun.
+cineintosh isn't just tech—it's a vision: prediction markets should feel effortless yet remain fully decentralized. Whether you're a developer diving into MPC and rollups, or a first-time user placing your inaugural bet, I've built this to be approachable, transparent, and fun.
 
 Dive in, create a market, predict boldly—and let's see what emerges when barriers vanish.
 
@@ -45,9 +45,9 @@ Arcium's **confidential voting** eliminates this problem entirely. Using encrypt
 
 Before Arcium, decentralized prediction markets faced an impossible choice: sacrifice decentralization by using trusted resolvers, or sacrifice fairness by exposing votes publicly. Polymarket chose the first path (DAO-controlled resolution). Augur chose the second (transparent voting with game-theoretic flaws).
 
-Olivia, powered by Arcium, escapes this trade-off entirely. Encrypted voting preserves privacy during the critical window when strategic manipulation could occur, then reveals results only when honesty is the only rational strategy. Combined with permissionless market creation and automated resolution, Arcium makes prediction markets truly open, fair, and trustless.
+cineintosh, powered by Arcium, escapes this trade-off entirely. Encrypted voting preserves privacy during the critical window when strategic manipulation could occur, then reveals results only when honesty is the only rational strategy. Combined with permissionless market creation and automated resolution, Arcium makes prediction markets truly open, fair, and trustless.
 
-This is why Arcium isn't just a feature—it's the foundation that makes Olivia's vision possible.
+This is why Arcium isn't just a feature—it's the foundation that makes cineintosh's vision possible.
 
 ---
 
@@ -182,7 +182,7 @@ pub fn resolve_market_callback(
 
 ## Documentation
 
-For detailed technical documentation on how these technologies integrate with Olivia:
+For detailed technical documentation on how these technologies integrate with cineintosh:
 
 - **Arcium Encrypted Computation:** [Arcium/docs/Arcium.md](Arcium/docs/Arcium.md) - Learn how Multi-Party Computation enables private predictions and trustless market resolution
 - **Magic Block Ephemeral Rollups:** [Arcium/docs/MagicBlock.md](Arcium/docs/MagicBlock.md) - Discover how ephemeral rollups deliver instant, zero-fee transactions while maintaining decentralization
