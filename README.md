@@ -1,4 +1,4 @@
-# Cineintosh.
+# Olivia.
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Solana](https://img.shields.io/badge/Solana-Blockchain-purple.svg)
 ![Arcium](https://img.shields.io/badge/Arcium-Encrypted%20Computation-green.svg)
@@ -6,7 +6,11 @@
 ![Decentralized](https://img.shields.io/badge/Decentralized-Yes-brightgreen.svg)
 ![Permissionless](https://img.shields.io/badge/Permissionless-Yes-success.svg)
 
-Cineintosh — A truly decentralized, permissionless prediction market that runs without middlemen, gatekeepers, or hidden agendas. Anyone, anywhere, can spin up a market on any question that sparks their curiosity: election results, tech breakthroughs, sports outcomes, or even that friendly office bet. No approvals, no oversight, just pure, open participation.
+Olivia is a market driven research platform designed to help investors identify high-signal early stage startups. It enables domain experts, scouts, and researchers to share insights and express conviction by putting real economic stakes behind their opinions.
+
+These incentive-aligned markets aggregate dispersed expertise into clear, actionable signals about which startups are most likely to succeed. Investors and sponsors use Olivia to discover promising opportunities earlier, cut through noisy or biased research, and reward accurate, high quality analysis.
+
+Investors and sponsors use Olivia to discover promising opportunities earlier, cut through noisy or biased research, and reward accurate, high-quality analysis. By aligning incentives between experts and capital allocators, Olivia transforms fragmented startup knowledge into a transparent, continuously updating source of investable intelligence.
 
 [![Watch the demo](https://img.youtube.com/vi/veCQLeF5lTQ/maxresdefault.jpg)](https://youtu.be/veCQLeF5lTQ)
 
